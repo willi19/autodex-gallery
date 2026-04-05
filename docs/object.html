@@ -87,6 +87,26 @@
     .badge-fail { background: #f85149; color: #fff; }
     .badge-untested { background: var(--border); color: var(--text-muted); }
 
+    /* Stats bar */
+    .exp-stats {
+      display: flex;
+      gap: 16px;
+      margin-bottom: 16px;
+      padding: 12px 16px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      font-size: 0.9em;
+      flex-wrap: wrap;
+    }
+    .exp-stats .stat { display: flex; align-items: center; gap: 6px; }
+    .stat-dot {
+      width: 10px; height: 10px; border-radius: 50%; display: inline-block;
+    }
+    .stat-dot.success { background: var(--green); }
+    .stat-dot.fail { background: #f85149; }
+    .stat-dot.untested { background: var(--border); }
+
     /* Experiments view - side by side */
     .exp-list { display: flex; flex-direction: column; gap: 24px; }
     .exp-row {
@@ -288,7 +308,19 @@
       }
 
       const count = obj.hands[currentHand] || 0;
-      document.getElementById('grasp-count').textContent = `${count} grasps`;
+      // Count stats
+      let nSuccess = 0, nFail = 0, nUntested = 0;
+      for (let i = 0; i < count; i++) {
+        const exp = getExpData(i);
+        if (!exp) nUntested++;
+        else if (exp.status === 'success') nSuccess++;
+        else nFail++;
+      }
+      document.getElementById('grasp-count').innerHTML =
+        `<span class="stat"><span class="stat-dot success"></span> ${nSuccess}</span>` +
+        `<span class="stat"><span class="stat-dot fail"></span> ${nFail}</span>` +
+        `<span class="stat"><span class="stat-dot untested"></span> ${nUntested}</span>` +
+        `<span style="color:var(--text-muted)">/ ${count} total</span>`;
 
       if (currentView === 'gallery') {
         renderGallery(obj, count);
