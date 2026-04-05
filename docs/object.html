@@ -87,6 +87,13 @@
     .badge-fail { background: #f85149; color: #fff; }
     .badge-untested { background: var(--border); color: var(--text-muted); }
 
+    .dl-btn {
+      background: none; border: none; color: var(--text-muted);
+      cursor: pointer; font-size: 0.85em; padding: 2px 4px;
+      transition: color 0.2s;
+    }
+    .dl-btn:hover { color: var(--accent); }
+
     /* Stats bar */
     .exp-stats {
       display: flex;
@@ -347,7 +354,10 @@
             <video data-src="${videoUrl}" preload="none" loop muted playsinline autoplay></video>
             <div class="card-footer">
               <span class="badge badge-rank">#${i + 1}</span>
-              ${badgeHtml}
+              <span>
+                ${badgeHtml}
+                <button class="dl-btn" title="Download" onclick="event.stopPropagation();downloadVideo('${videoUrl}','${currentObj}_${currentHand}_${rank}.mp4')">&#x2B07;</button>
+              </span>
             </div>
           </div>`;
       }
@@ -452,6 +462,16 @@
       }
       html += '</div>';
       content.innerHTML = html;
+    }
+
+    function downloadVideo(url, filename) {
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = filename;
+      a.target = '_blank';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
     }
 
     function switchCam(select) {
