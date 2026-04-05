@@ -311,10 +311,8 @@
             : '<span class="badge badge-fail">FAIL</span>';
         }
         html += `
-          <div class="grasp-card" data-idx="${i}"
-               onmouseenter="this.querySelector('video').play()"
-               onmouseleave="this.querySelector('video').pause();this.querySelector('video').currentTime=0">
-            <video data-src="${videoUrl}" preload="none" loop muted playsinline></video>
+          <div class="grasp-card" data-idx="${i}">
+            <video data-src="${videoUrl}" preload="none" loop muted playsinline autoplay></video>
             <div class="card-footer">
               <span class="badge badge-rank">#${i + 1}</span>
               ${badgeHtml}
@@ -331,7 +329,8 @@
             const video = e.target.querySelector('video');
             if (video && video.dataset.src && !video.src) {
               video.src = video.dataset.src;
-              video.preload = 'metadata';
+              video.load();
+              video.play().catch(() => {});
             }
             observer.unobserve(e.target);
           }
