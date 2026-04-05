@@ -449,11 +449,11 @@
             <div class="exp-videos">
               <div class="exp-video-cell">
                 <div class="cell-label">Turntable</div>
-                <video src="${turntableUrl}" controls preload="metadata" loop muted playsinline></video>
+                <video src="${turntableUrl}" controls preload="metadata" loop muted playsinline autoplay></video>
               </div>
               <div class="exp-video-cell">
                 <div class="cell-label">Experiment</div>
-                <video id="exp-video-${idx}" src="${expVideoUrl}" controls preload="none" loop playsinline
+                <video id="exp-video-${idx}" src="${expVideoUrl}" controls preload="metadata" loop muted playsinline autoplay
                        ${!expVideoUrl ? 'style="display:none"' : ''}></video>
                 ${!expVideoUrl ? '<div class="empty-state" style="padding:20px">No video available</div>' : ''}
               </div>

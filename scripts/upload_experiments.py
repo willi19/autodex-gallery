@@ -18,6 +18,7 @@ import json
 import os
 import shutil
 import subprocess
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from pathlib import Path
 
 from huggingface_hub import HfApi
@@ -129,15 +130,45 @@ def main():
                 print(f"  setcover_rank={rank:3d} ({status}) scene={trial.get('scene_info')} ({n} cams)")
         return
 
-    for oi, (hand, obj, trials) in enumerate(obj_tasks):
-        print(f"\n[{oi+1}/{len(obj_tasks)}] {hand}/{obj} ({len(trials)} grasps)")
+    import threading
+    from queue import Queue
 
-        mp4_dir = LOCAL_TMP / "mp4" / hand / obj
+    upload_queue = Queue()
+    upload_done = threading.Event()
+
+    def upload_worker():
+        """Background thread: upload objects as they become ready."""
+        while True:
+            item = upload_queue.get()
+            if item is None:  # Poison pill
+                break
+            hand, obj, mp4_dir, oi, total = item
+            print(f"  Uploading {hand}/{obj}... [{oi}/{total}]")
+            try:
+                api.upload_folder(
+                    repo_id=REPO_ID,
+                    repo_type=REPO_TYPE,
+                    folder_path=str(mp4_dir),
+                    path_in_repo=f"experiments/{hand}/{obj}",
+                )
+                print(f"  Done: {hand}/{obj}")
+            except Exception as e:
+                print(f"  Upload failed {hand}/{obj}: {e}")
+            shutil.rmtree(mp4_dir, ignore_errors=True)
+            upload_queue.task_done()
+
+    uploader = threading.Thread(target=upload_worker, daemon=True)
+    uploader.start()
+
+    for oi, (hand, obj, trials) in enumerate(obj_tasks):
+        print(f"\n[{oi+1}/{len(obj_tasks)}] {hand}/{obj} ({len(trials)} grasps) - converting...")
+
+        mp4_dir = LOCAL_TMP / "mp4" / f"{hand}_{obj}"
 
         for rank, trial in sorted(trials.items()):
             rank_str = f"{rank:03d}"
             nas_videos = EXP_BASE / hand / obj / trial["dir_idx"] / "videos"
-            local_avi = LOCAL_TMP / "avi" / hand / obj / rank_str
+            local_avi = LOCAL_TMP / "avi" / f"{hand}_{obj}" / rank_str
             out_dir = mp4_dir / rank_str
 
             # Copy from NAS
@@ -147,11 +178,14 @@ def main():
             for avi in avis:
                 shutil.copy2(avi, local_avi / avi.name)
 
-            # Convert
+            # Convert (parallel)
             out_dir.mkdir(parents=True, exist_ok=True)
             print(f"  Converting rank {rank_str}/...")
-            for avi in sorted(local_avi.glob("*.avi")):
-                convert_avi_to_mp4(avi, out_dir / f"{avi.stem}.mp4")
+            avis_local = sorted(local_avi.glob("*.avi"))
+            with ThreadPoolExecutor(max_workers=16) as pool:
+                futures = [pool.submit(convert_avi_to_mp4, avi, out_dir / f"{avi.stem}.mp4") for avi in avis_local]
+                for f in as_completed(futures):
+                    f.result()
 
             # Metadata
             meta = {
@@ -167,18 +201,13 @@ def main():
             # Cleanup AVI
             shutil.rmtree(local_avi, ignore_errors=True)
 
-        # Upload
-        print(f"  Uploading {hand}/{obj}...")
-        api.upload_folder(
-            repo_id=REPO_ID,
-            repo_type=REPO_TYPE,
-            folder_path=str(mp4_dir),
-            path_in_repo=f"experiments/{hand}/{obj}",
-        )
-        print(f"  Done: {hand}/{obj}")
+        # Queue for upload (runs in background while next object converts)
+        upload_queue.put((hand, obj, mp4_dir, oi + 1, len(obj_tasks)))
 
-        # Cleanup MP4
-        shutil.rmtree(mp4_dir, ignore_errors=True)
+    # Wait for all uploads to finish
+    upload_queue.join()
+    upload_queue.put(None)  # Stop upload thread
+    uploader.join()
 
     shutil.rmtree(LOCAL_TMP, ignore_errors=True)
     print("\nAll done!")
