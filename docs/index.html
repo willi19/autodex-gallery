@@ -36,8 +36,13 @@
       .then(data => {
         document.getElementById('obj-count').textContent = data.length;
       });
-    // Experiment count - placeholder until experiments catalog exists
-    document.getElementById('exp-count').textContent = '0';
+    fetch('experiments.json')
+      .then(r => r.json())
+      .then(exp => {
+        const total = Object.values(exp).reduce((s, h) =>
+          s + Object.values(h).reduce((s2, o) => s2 + Object.keys(o).length, 0), 0);
+        document.getElementById('exp-count').textContent = total;
+      }).catch(() => { document.getElementById('exp-count').textContent = '0'; });
   </script>
 </body>
 </html>
