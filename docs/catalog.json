@@ -501,12 +501,24 @@
     "has_thumbnail": true
   },
   {
+    "id": "pepper_tuna_light",
+    "name": "Pepper Tuna Light",
+    "hands": {},
+    "has_thumbnail": true
+  },
+  {
     "id": "pepsi",
     "name": "Pepsi",
     "hands": {
       "allegro": 100,
       "inspire": 100
     },
+    "has_thumbnail": true
+  },
+  {
+    "id": "pepsi_light",
+    "name": "Pepsi Light",
+    "hands": {},
     "has_thumbnail": true
   },
   {
@@ -731,6 +743,12 @@
       "allegro": 100,
       "inspire": 100
     },
+    "has_thumbnail": true
+  },
+  {
+    "id": "watering_can",
+    "name": "Watering Can",
+    "hands": {},
     "has_thumbnail": true
   },
   {
