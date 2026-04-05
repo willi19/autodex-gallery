@@ -58,29 +58,20 @@ def main():
             print(f"  ... and {len(uploads) - 10} more")
         return
 
-    # Upload in batches using folder upload for efficiency
-    for hand in args.hand:
-        hand_dir = DATA_DIR / hand
-        if not hand_dir.exists():
-            continue
+    # Stage all files, single commit
+    print("Uploading all in one commit...")
+    operations = []
+    from huggingface_hub import CommitOperationAdd
+    for local, remote in uploads:
+        operations.append(CommitOperationAdd(path_in_repo=remote, path_or_fileobj=local))
 
-        objects = args.obj if args.obj else sorted(os.listdir(hand_dir))
-        for obj in objects:
-            obj_dir = hand_dir / obj
-            if not obj_dir.is_dir():
-                continue
-
-            print(f"Uploading {hand}/{obj}...")
-            api.upload_folder(
-                repo_id=REPO_ID,
-                repo_type=REPO_TYPE,
-                folder_path=str(obj_dir),
-                path_in_repo=f"turntable/{hand}/{obj}",
-                allow_patterns=["*/turntable.mp4"],
-            )
-            print(f"  Done: {hand}/{obj}")
-
-    print("All uploads complete!")
+    api.create_commit(
+        repo_id=REPO_ID,
+        repo_type=REPO_TYPE,
+        operations=operations,
+        commit_message=f"Add {len(uploads)} turntable videos",
+    )
+    print(f"Done! Uploaded {len(uploads)} videos in 1 commit.")
 
 
 if __name__ == "__main__":

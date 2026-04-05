@@ -314,7 +314,7 @@
           <div class="grasp-card" data-idx="${i}"
                onmouseenter="this.querySelector('video').play()"
                onmouseleave="this.querySelector('video').pause();this.querySelector('video').currentTime=0">
-            <video src="${videoUrl}" preload="none" loop muted playsinline></video>
+            <video data-src="${videoUrl}" preload="none" loop muted playsinline></video>
             <div class="card-footer">
               <span class="badge badge-rank">#${i + 1}</span>
               ${badgeHtml}
@@ -323,6 +323,21 @@
       }
       html += '</div>';
       content.innerHTML = html;
+
+      // Lazy load: only set src when video scrolls into view
+      const observer = new IntersectionObserver((entries) => {
+        entries.forEach(e => {
+          if (e.isIntersecting) {
+            const video = e.target.querySelector('video');
+            if (video && video.dataset.src && !video.src) {
+              video.src = video.dataset.src;
+              video.preload = 'metadata';
+            }
+            observer.unobserve(e.target);
+          }
+        });
+      }, { rootMargin: '200px' });
+      content.querySelectorAll('.grasp-card').forEach(card => observer.observe(card));
 
       // Click to jump to experiments view for this grasp
       content.querySelectorAll('.grasp-card').forEach(card => {
@@ -393,7 +408,7 @@
             <div class="exp-videos">
               <div class="exp-video-cell">
                 <div class="cell-label">Turntable</div>
-                <video src="${turntableUrl}" controls preload="none" loop muted playsinline></video>
+                <video src="${turntableUrl}" controls preload="metadata" loop muted playsinline></video>
               </div>
               <div class="exp-video-cell">
                 <div class="cell-label">Experiment</div>
