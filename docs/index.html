@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AutoDex</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <nav class="nav">
+    <span class="nav-logo">AutoDex</span>
+    <a href="gallery.html">Gallery</a>
+    <a href="experiments.html">Experiments</a>
+  </nav>
+
+  <div class="landing">
+    <h1>AutoDex</h1>
+    <p>Dexterous Manipulation: Grasp Generation & Experiment Results</p>
+    <div class="landing-cards">
+      <a class="landing-card" href="gallery.html">
+        <div class="card-count" id="obj-count">-</div>
+        <h2>Gallery</h2>
+        <p>Browse objects and grasp candidates</p>
+      </a>
+      <a class="landing-card" href="experiments.html">
+        <div class="card-count" id="exp-count">-</div>
+        <h2>Experiments</h2>
+        <p>Watch real robot execution videos</p>
+      </a>
+    </div>
+  </div>
+
+  <script>
+    fetch('catalog.json')
+      .then(r => r.json())
+      .then(data => {
+        document.getElementById('obj-count').textContent = data.length;
+      });
+    // Experiment count - placeholder until experiments catalog exists
+    document.getElementById('exp-count').textContent = '0';
+  </script>
+</body>
+</html>

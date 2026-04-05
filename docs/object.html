@@ -1,0 +1,425 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Object - AutoDex</title>
+  <link rel="stylesheet" href="css/style.css">
+  <style>
+    /* Object page specific styles */
+    .controls {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      margin-bottom: 20px;
+      flex-wrap: wrap;
+    }
+    .obj-select {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      color: var(--text);
+      padding: 8px 12px;
+      font-size: 0.9em;
+      min-width: 200px;
+    }
+    .view-toggle {
+      display: flex;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      overflow: hidden;
+    }
+    .view-btn {
+      padding: 8px 16px;
+      background: none;
+      border: none;
+      color: var(--text-muted);
+      cursor: pointer;
+      font-size: 0.9em;
+      transition: background 0.2s, color 0.2s;
+    }
+    .view-btn.active {
+      background: var(--accent);
+      color: var(--bg);
+    }
+    .view-btn:hover:not(.active) { color: var(--text); }
+
+    /* Gallery view - compact cards */
+    .grasp-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 12px;
+    }
+    .grasp-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      overflow: hidden;
+      cursor: pointer;
+      transition: border-color 0.2s, transform 0.15s;
+    }
+    .grasp-card:hover {
+      border-color: var(--accent);
+      transform: translateY(-2px);
+    }
+    .grasp-card video {
+      width: 100%;
+      aspect-ratio: 16/9;
+      background: #000;
+      pointer-events: none;
+    }
+    .grasp-card .card-footer {
+      padding: 6px 10px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 0.85em;
+    }
+    .badge {
+      padding: 2px 8px;
+      border-radius: 4px;
+      font-size: 0.75em;
+      font-weight: 700;
+    }
+    .badge-rank { background: var(--accent); color: var(--bg); }
+    .badge-success { background: var(--green); color: var(--bg); }
+    .badge-fail { background: #f85149; color: #fff; }
+    .badge-untested { background: var(--border); color: var(--text-muted); }
+
+    /* Experiments view - side by side */
+    .exp-list { display: flex; flex-direction: column; gap: 24px; }
+    .exp-row {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      overflow: hidden;
+    }
+    .exp-row-header {
+      padding: 12px 16px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .exp-row-header h3 { font-size: 1em; }
+    .exp-videos {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1px;
+      background: var(--border);
+    }
+    .exp-video-cell {
+      background: var(--surface);
+      padding: 8px;
+    }
+    .exp-video-cell .cell-label {
+      font-size: 0.8em;
+      color: var(--text-muted);
+      margin-bottom: 4px;
+    }
+    .exp-video-cell video {
+      width: 100%;
+      aspect-ratio: 16/9;
+      background: #000;
+      border-radius: 4px;
+    }
+
+    .cam-select {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      color: var(--text);
+      padding: 4px 8px;
+      font-size: 0.8em;
+    }
+
+    .empty-state {
+      text-align: center;
+      padding: 60px 24px;
+      color: var(--text-muted);
+    }
+
+    .grasp-count {
+      color: var(--text-muted);
+      font-size: 0.9em;
+    }
+
+    @media (max-width: 640px) {
+      .grasp-grid { grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); }
+      .exp-videos { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <nav class="nav">
+    <a class="nav-logo" href="index.html">AutoDex</a>
+    <a href="gallery.html">Gallery</a>
+  </nav>
+
+  <div class="container">
+    <!-- Hand tabs -->
+    <div class="tabs" id="hand-tabs"></div>
+
+    <!-- Controls row -->
+    <div class="controls">
+      <select class="obj-select" id="obj-select"></select>
+      <div class="view-toggle">
+        <button class="view-btn active" data-view="gallery">Gallery</button>
+        <button class="view-btn" data-view="experiments">Experiments</button>
+      </div>
+      <span class="grasp-count" id="grasp-count"></span>
+    </div>
+
+    <!-- Content -->
+    <div id="content">
+      <div class="loading">Loading...</div>
+    </div>
+  </div>
+
+  <script>
+    const HF_BASE = 'https://huggingface.co/datasets/willi19/autodex-gallery/resolve/main';
+    const params = new URLSearchParams(location.search);
+
+    let catalog = [];
+    let currentObj = params.get('obj') || null;
+    let currentHand = params.get('hand') || 'allegro';
+    let currentView = params.get('view') || 'gallery';
+    let experiments = {}; // Will be loaded from experiments.json
+
+    // Init
+    Promise.all([
+      fetch('catalog.json').then(r => r.json()),
+      fetch('experiments.json').then(r => r.json()).catch(() => ({}))
+    ]).then(([cat, exp]) => {
+      catalog = cat;
+      experiments = exp;
+      if (!currentObj && catalog.length > 0) currentObj = catalog[0].id;
+      initUI();
+      render();
+    });
+
+    function initUI() {
+      // Hand tabs
+      renderHandTabs();
+
+      // Object selector
+      const select = document.getElementById('obj-select');
+      const objs = catalog.filter(o => o.hands[currentHand]);
+      select.innerHTML = objs.map(o =>
+        `<option value="${o.id}" ${o.id === currentObj ? 'selected' : ''}>${o.name}</option>`
+      ).join('');
+      select.addEventListener('change', e => {
+        currentObj = e.target.value;
+        updateURL();
+        render();
+      });
+
+      // View toggle
+      document.querySelectorAll('.view-btn').forEach(btn => {
+        if (btn.dataset.view === currentView) btn.classList.add('active');
+        else btn.classList.remove('active');
+        btn.addEventListener('click', () => {
+          document.querySelectorAll('.view-btn').forEach(b => b.classList.remove('active'));
+          btn.classList.add('active');
+          currentView = btn.dataset.view;
+          updateURL();
+          render();
+        });
+      });
+    }
+
+    function renderHandTabs() {
+      const hands = ['allegro', 'inspire'];
+      const tabsEl = document.getElementById('hand-tabs');
+      tabsEl.innerHTML = hands.map(h => {
+        const count = catalog.filter(o => o.hands[h]).length;
+        const active = h === currentHand ? 'active' : '';
+        return `<button class="tab ${active}" data-hand="${h}">${h.charAt(0).toUpperCase() + h.slice(1)} (${count})</button>`;
+      }).join('');
+      tabsEl.querySelectorAll('.tab').forEach(btn => {
+        btn.addEventListener('click', () => {
+          currentHand = btn.dataset.hand;
+          // Update object list
+          const select = document.getElementById('obj-select');
+          const objs = catalog.filter(o => o.hands[currentHand]);
+          select.innerHTML = objs.map(o =>
+            `<option value="${o.id}" ${o.id === currentObj ? 'selected' : ''}>${o.name}</option>`
+          ).join('');
+          // If current obj not in this hand, switch to first
+          if (!objs.find(o => o.id === currentObj)) {
+            currentObj = objs[0]?.id;
+            select.value = currentObj;
+          }
+          renderHandTabs();
+          updateURL();
+          render();
+        });
+      });
+    }
+
+    function updateURL() {
+      const p = new URLSearchParams();
+      if (currentObj) p.set('obj', currentObj);
+      p.set('hand', currentHand);
+      p.set('view', currentView);
+      history.replaceState(null, '', `object.html?${p}`);
+      document.title = `${currentObj?.replace(/_/g, ' ') || 'Object'} - AutoDex`;
+    }
+
+    function getObjData() {
+      return catalog.find(o => o.id === currentObj);
+    }
+
+    function getExpData(graspIdx) {
+      // experiments[hand][obj][graspIdx] = { status, cameras: [...serials], merged: true/false }
+      const handExp = experiments[currentHand];
+      if (!handExp) return null;
+      const objExp = handExp[currentObj];
+      if (!objExp) return null;
+      return objExp[String(graspIdx)] || null;
+    }
+
+    function render() {
+      const obj = getObjData();
+      if (!obj) {
+        document.getElementById('content').innerHTML = '<div class="empty-state">Object not found</div>';
+        return;
+      }
+
+      const count = obj.hands[currentHand] || 0;
+      document.getElementById('grasp-count').textContent = `${count} grasps`;
+
+      if (currentView === 'gallery') {
+        renderGallery(obj, count);
+      } else {
+        renderExperiments(obj, count);
+      }
+    }
+
+    function renderGallery(obj, count) {
+      const content = document.getElementById('content');
+      let html = '<div class="grasp-grid">';
+      for (let i = 0; i < count; i++) {
+        const rank = String(i).padStart(3, '0');
+        const videoUrl = `${HF_BASE}/turntable/${currentHand}/${currentObj}/${rank}/turntable.mp4`;
+        const exp = getExpData(i);
+        let badgeHtml = '<span class="badge badge-untested">-</span>';
+        if (exp) {
+          badgeHtml = exp.status === 'success'
+            ? '<span class="badge badge-success">OK</span>'
+            : '<span class="badge badge-fail">FAIL</span>';
+        }
+        html += `
+          <div class="grasp-card" data-idx="${i}"
+               onmouseenter="this.querySelector('video').play()"
+               onmouseleave="this.querySelector('video').pause();this.querySelector('video').currentTime=0">
+            <video src="${videoUrl}" preload="none" loop muted playsinline></video>
+            <div class="card-footer">
+              <span class="badge badge-rank">#${i + 1}</span>
+              ${badgeHtml}
+            </div>
+          </div>`;
+      }
+      html += '</div>';
+      content.innerHTML = html;
+
+      // Click to jump to experiments view for this grasp
+      content.querySelectorAll('.grasp-card').forEach(card => {
+        card.addEventListener('click', () => {
+          const idx = card.dataset.idx;
+          currentView = 'experiments';
+          document.querySelectorAll('.view-btn').forEach(b => b.classList.remove('active'));
+          document.querySelector('.view-btn[data-view="experiments"]').classList.add('active');
+          updateURL();
+          render();
+          // Scroll to the specific grasp
+          setTimeout(() => {
+            const el = document.getElementById(`exp-${idx}`);
+            if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+          }, 100);
+        });
+      });
+    }
+
+    function renderExperiments(obj, count) {
+      const content = document.getElementById('content');
+
+      // Collect grasps that have experiment data
+      let expGrasps = [];
+      for (let i = 0; i < count; i++) {
+        const exp = getExpData(i);
+        if (exp) expGrasps.push({ idx: i, exp });
+      }
+
+      if (expGrasps.length === 0) {
+        content.innerHTML = `
+          <div class="empty-state">
+            <h2>No experiments yet</h2>
+            <p>Experiment videos for ${obj.name} (${currentHand}) will appear here once uploaded.</p>
+          </div>`;
+        return;
+      }
+
+      let html = '<div class="exp-list">';
+      for (const { idx, exp } of expGrasps) {
+        const rank = String(idx).padStart(3, '0');
+        const turntableUrl = `${HF_BASE}/turntable/${currentHand}/${currentObj}/${rank}/turntable.mp4`;
+        const statusBadge = exp.status === 'success'
+          ? '<span class="badge badge-success">Success</span>'
+          : '<span class="badge badge-fail">Failed</span>';
+
+        // Camera selector for experiment videos
+        const cameras = exp.cameras || [];
+        const hasMerged = exp.merged !== false;
+        let camOptions = '';
+        if (hasMerged) camOptions += '<option value="merged">Merged</option>';
+        cameras.forEach(s => { camOptions += `<option value="${s}">${s}</option>`; });
+
+        const defaultCam = hasMerged ? 'merged' : (cameras[0] || '');
+        const expVideoUrl = defaultCam
+          ? `${HF_BASE}/experiments/${currentHand}/${currentObj}/${rank}/${defaultCam}.mp4`
+          : '';
+
+        html += `
+          <div class="exp-row" id="exp-${idx}">
+            <div class="exp-row-header">
+              <h3>Grasp #${idx + 1} ${statusBadge}</h3>
+              ${cameras.length > 0 || hasMerged ? `
+                <select class="cam-select" data-idx="${idx}" onchange="switchCam(this)">
+                  ${camOptions}
+                </select>` : ''}
+            </div>
+            <div class="exp-videos">
+              <div class="exp-video-cell">
+                <div class="cell-label">Turntable</div>
+                <video src="${turntableUrl}" controls preload="none" loop muted playsinline></video>
+              </div>
+              <div class="exp-video-cell">
+                <div class="cell-label">Experiment</div>
+                <video id="exp-video-${idx}" src="${expVideoUrl}" controls preload="none" loop playsinline
+                       ${!expVideoUrl ? 'style="display:none"' : ''}></video>
+                ${!expVideoUrl ? '<div class="empty-state" style="padding:20px">No video available</div>' : ''}
+              </div>
+            </div>
+          </div>`;
+      }
+      html += '</div>';
+      content.innerHTML = html;
+    }
+
+    function switchCam(select) {
+      const idx = select.dataset.idx;
+      const cam = select.value;
+      const rank = String(idx).padStart(3, '0');
+      const url = `${HF_BASE}/experiments/${currentHand}/${currentObj}/${rank}/${cam}.mp4`;
+      const video = document.getElementById(`exp-video-${idx}`);
+      if (video) {
+        video.src = url;
+        video.style.display = '';
+        video.load();
+      }
+    }
+  </script>
+</body>
+</html>

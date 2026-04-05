@@ -1,0 +1,898 @@
+[
+  {
+    "id": "apple",
+    "name": "Apple",
+    "hands": {
+      "allegro": 100,
+      "inspire": 100
+    },
+    "has_thumbnail": true
+  },
+  {
+    "id": "attached_container",
+    "name": "Attached Container",
+    "hands": {
+      "allegro": 100,
+      "inspire": 100
+    },
+    "has_thumbnail": true
+  },
+  {
+    "id": "baby_beaker",
+    "name": "Baby Beaker",
+    "hands": {
+      "allegro": 100,
+      "inspire": 100
+    },
+    "has_thumbnail": true
+  },
+  {
+    "id": "balloon_whisk",
+    "name": "Balloon Whisk",
+    "hands": {
+      "allegro": 100,
+      "inspire": 57
+    },
+    "has_thumbnail": true
+  },
+  {
+    "id": "bamboo_box",
+    "name": "Bamboo Box",
+    "hands": {
+      "allegro": 100,
+      "inspire": 100
+    },
+    "has_thumbnail": true
+  },
+  {
+    "id": "banana",
+    "name": "Banana",
+    "hands": {
+      "allegro": 100,
+      "inspire": 100
+    },
+    "has_thumbnail": true
+  },
+  {
+    "id": "baseball",
+    "name": "Baseball",
+    "hands": {
+      "allegro": 7,
+      "inspire": 100
+    },
+    "has_thumbnail": true
+  },
+  {
+    "id": "beige_brush",
+    "name": "Beige Brush",
+    "hands": {
+      "allegro": 100,
+      "inspire": 100
+    },
+    "has_thumbnail": true
+  },
+  {
+    "id": "black_holder_with_handle",
+    "name": "Black Holder With Handle",
+    "hands": {
+      "allegro": 100,
+      "inspire": 100
+    },
+    "has_thumbnail": true
+  },
+  {
+    "id": "black_kitchen_roll_holder",
+    "name": "Black Kitchen Roll Holder",
+    "hands": {
+      "allegro": 100,
+      "inspire": 100
+    },
+    "has_thumbnail": true
+  },
+  {
+    "id": "blue_alarm",
+    "name": "Blue Alarm",
+    "hands": {
+      "allegro": 100,
+      "inspire": 100
+    },
+    "has_thumbnail": true
+  },
+  {
+    "id": "blue_vase",
+    "name": "Blue Vase",
+    "hands": {
+      "allegro": 100,
+      "inspire": 100
+    },
+    "has_thumbnail": true
+  },
+  {
+    "id": "book",
+    "name": "Book",
+    "hands": {
+      "allegro": 100,
+      "inspire": 100
+    },
+    "has_thumbnail": true
+  },
+  {
+    "id": "box_pink",
+    "name": "Box Pink",
+    "hands": {
+      "allegro": 100,
+      "inspire": 100
+    },
+    "has_thumbnail": true
+  },
+  {
+    "id": "brass_pot",
+    "name": "Brass Pot",
+    "hands": {
+      "allegro": 100,
+      "inspire": 100
+    },
+    "has_thumbnail": true
+  },
+  {
+    "id": "brown_ramen",
+    "name": "Brown Ramen",
+    "hands": {
+      "allegro": 100,
+      "inspire": 100
+    },
+    "has_thumbnail": true
+  },
+  {
+    "id": "clock",
+    "name": "Clock",
+    "hands": {
+      "allegro": 100,
+      "inspire": 100
+    },
+    "has_thumbnail": true
+  },
+  {
+    "id": "coffee_tin",
+    "name": "Coffee Tin",
+    "hands": {
+      "allegro": 100,
+      "inspire": 100
+    },
+    "has_thumbnail": true
+  },
+  {
+    "id": "colander_green",
+    "name": "Colander Green",
+    "hands": {
+      "allegro": 100,
+      "inspire": 63
+    },
+    "has_thumbnail": true
+  },
+  {
+    "id": "container_pink",
+    "name": "Container Pink",
+    "hands": {
+      "allegro": 100,
+      "inspire": 100
+    },
+    "has_thumbnail": true
+  },
+  {
+    "id": "corkscrew",
+    "name": "Corkscrew",
+    "hands": {
+      "allegro": 88
+    },
+    "has_thumbnail": true
+  },
+  {
+    "id": "donut",
+    "name": "Donut",
+    "hands": {
+      "allegro": 100,
+      "inspire": 50
+    },
+    "has_thumbnail": true
+  },
+  {
+    "id": "donut_light",
+    "name": "Donut Light",
+    "hands": {
+      "allegro": 100,
+      "inspire": 100
+    },
+    "has_thumbnail": true
+  },
+  {
+    "id": "frame_oak",
+    "name": "Frame Oak",
+    "hands": {
+      "allegro": 100,
+      "inspire": 100
+    },
+    "has_thumbnail": true
+  },
+  {
+    "id": "frame_red",
+    "name": "Frame Red",
+    "hands": {
+      "allegro": 100,
+      "inspire": 100
+    },
+    "has_thumbnail": true
+  },
+  {
+    "id": "french_mustard",
+    "name": "French Mustard",
+    "hands": {
+      "allegro": 100,
+      "inspire": 100
+    },
+    "has_thumbnail": true
+  },
+  {
+    "id": "frog_bowl",
+    "name": "Frog Bowl",
+    "hands": {
+      "allegro": 100,
+      "inspire": 100
+    },
+    "has_thumbnail": true
+  },
+  {
+    "id": "frog_cup",
+    "name": "Frog Cup",
+    "hands": {
+      "allegro": 100,
+      "inspire": 100
+    },
+    "has_thumbnail": true
+  },
+  {
+    "id": "fruit_cutter_base",
+    "name": "Fruit Cutter Base",
+    "hands": {
+      "allegro": 100,
+      "inspire": 100
+    },
+    "has_thumbnail": true
+  },
+  {
+    "id": "fruit_cutter_green",
+    "name": "Fruit Cutter Green",
+    "hands": {
+      "allegro": 100
+    },
+    "has_thumbnail": true
+  },
+  {
+    "id": "fruit_cutter_light_green",
+    "name": "Fruit Cutter Light Green",
+    "hands": {
+      "allegro": 100,
+      "inspire": 2
+    },
+    "has_thumbnail": true
+  },
+  {
+    "id": "green_attached_container",
+    "name": "Green Attached Container",
+    "hands": {
+      "allegro": 100,
+      "inspire": 100
+    },
+    "has_thumbnail": true
+  },
+  {
+    "id": "green_cactus_vase",
+    "name": "Green Cactus Vase",
+    "hands": {
+      "allegro": 100,
+      "inspire": 100
+    },
+    "has_thumbnail": true
+  },
+  {
+    "id": "green_lamp",
+    "name": "Green Lamp",
+    "hands": {
+      "allegro": 100,
+      "inspire": 100
+    },
+    "has_thumbnail": true
+  },
+  {
+    "id": "green_soap_dispenser",
+    "name": "Green Soap Dispenser",
+    "hands": {
+      "allegro": 100,
+      "inspire": 100
+    },
+    "has_thumbnail": true
+  },
+  {
+    "id": "icecream_scoop",
+    "name": "Icecream Scoop",
+    "hands": {
+      "allegro": 100,
+      "inspire": 81
+    },
+    "has_thumbnail": true
+  },
+  {
+    "id": "jja_ramen",
+    "name": "Jja Ramen",
+    "hands": {
+      "allegro": 100,
+      "inspire": 100
+    },
+    "has_thumbnail": true
+  },
+  {
+    "id": "knife_sharpner",
+    "name": "Knife Sharpner",
+    "hands": {
+      "allegro": 100,
+      "inspire": 100
+    },
+    "has_thumbnail": true
+  },
+  {
+    "id": "large_peg",
+    "name": "Large Peg",
+    "hands": {
+      "allegro": 100,
+      "inspire": 52
+    },
+    "has_thumbnail": true
+  },
+  {
+    "id": "lemon",
+    "name": "Lemon",
+    "hands": {
+      "allegro": 100,
+      "inspire": 100
+    },
+    "has_thumbnail": true
+  },
+  {
+    "id": "lemon_squeezer",
+    "name": "Lemon Squeezer",
+    "hands": {
+      "allegro": 100,
+      "inspire": 7
+    },
+    "has_thumbnail": true
+  },
+  {
+    "id": "light_green_basket",
+    "name": "Light Green Basket",
+    "hands": {
+      "allegro": 100,
+      "inspire": 100
+    },
+    "has_thumbnail": true
+  },
+  {
+    "id": "lilac_food_container",
+    "name": "Lilac Food Container",
+    "hands": {
+      "allegro": 100,
+      "inspire": 52
+    },
+    "has_thumbnail": true
+  },
+  {
+    "id": "magazine_file",
+    "name": "Magazine File",
+    "hands": {
+      "allegro": 100,
+      "inspire": 89
+    },
+    "has_thumbnail": true
+  },
+  {
+    "id": "metal_scoop_big",
+    "name": "Metal Scoop Big",
+    "hands": {
+      "allegro": 100,
+      "inspire": 33
+    },
+    "has_thumbnail": true
+  },
+  {
+    "id": "metal_scoop_small",
+    "name": "Metal Scoop Small",
+    "hands": {
+      "allegro": 100,
+      "inspire": 28
+    },
+    "has_thumbnail": true
+  },
+  {
+    "id": "mug_holder",
+    "name": "Mug Holder",
+    "hands": {
+      "allegro": 100,
+      "inspire": 100
+    },
+    "has_thumbnail": true
+  },
+  {
+    "id": "open_box",
+    "name": "Open Box",
+    "hands": {
+      "allegro": 100,
+      "inspire": 6
+    },
+    "has_thumbnail": true
+  },
+  {
+    "id": "open_short_pringles",
+    "name": "Open Short Pringles",
+    "hands": {
+      "allegro": 100,
+      "inspire": 100
+    },
+    "has_thumbnail": true
+  },
+  {
+    "id": "orange",
+    "name": "Orange",
+    "hands": {
+      "allegro": 100,
+      "inspire": 100
+    },
+    "has_thumbnail": true
+  },
+  {
+    "id": "organizer_beige",
+    "name": "Organizer Beige",
+    "hands": {
+      "allegro": 100,
+      "inspire": 100
+    },
+    "has_thumbnail": true
+  },
+  {
+    "id": "paper_bowl",
+    "name": "Paper Bowl",
+    "hands": {
+      "allegro": 27,
+      "inspire": 100
+    },
+    "has_thumbnail": true
+  },
+  {
+    "id": "paper_box",
+    "name": "Paper Box",
+    "hands": {
+      "allegro": 100
+    },
+    "has_thumbnail": true
+  },
+  {
+    "id": "paper_cup",
+    "name": "Paper Cup",
+    "hands": {
+      "allegro": 70,
+      "inspire": 100
+    },
+    "has_thumbnail": true
+  },
+  {
+    "id": "pastel_blue_cup",
+    "name": "Pastel Blue Cup",
+    "hands": {
+      "allegro": 100,
+      "inspire": 100
+    },
+    "has_thumbnail": true
+  },
+  {
+    "id": "pepper_tuna",
+    "name": "Pepper Tuna",
+    "hands": {
+      "allegro": 100,
+      "inspire": 100
+    },
+    "has_thumbnail": true
+  },
+  {
+    "id": "pepsi",
+    "name": "Pepsi",
+    "hands": {
+      "allegro": 100,
+      "inspire": 100
+    },
+    "has_thumbnail": true
+  },
+  {
+    "id": "pingpong",
+    "name": "Pingpong",
+    "hands": {
+      "allegro": 100,
+      "inspire": 28
+    },
+    "has_thumbnail": true
+  },
+  {
+    "id": "pink_clock",
+    "name": "Pink Clock",
+    "hands": {
+      "allegro": 100,
+      "inspire": 100
+    },
+    "has_thumbnail": true
+  },
+  {
+    "id": "plant_mister",
+    "name": "Plant Mister",
+    "hands": {
+      "allegro": 100,
+      "inspire": 86
+    },
+    "has_thumbnail": true
+  },
+  {
+    "id": "plant_pot",
+    "name": "Plant Pot",
+    "hands": {
+      "allegro": 100,
+      "inspire": 98
+    },
+    "has_thumbnail": true
+  },
+  {
+    "id": "potato_mesher",
+    "name": "Potato Mesher",
+    "hands": {
+      "allegro": 100,
+      "inspire": 100
+    },
+    "has_thumbnail": true
+  },
+  {
+    "id": "redcar",
+    "name": "Redcar",
+    "hands": {
+      "allegro": 100,
+      "inspire": 100
+    },
+    "has_thumbnail": false
+  },
+  {
+    "id": "rolling_pin",
+    "name": "Rolling Pin",
+    "hands": {
+      "allegro": 100,
+      "inspire": 100
+    },
+    "has_thumbnail": true
+  },
+  {
+    "id": "screwdriver",
+    "name": "Screwdriver",
+    "hands": {
+      "allegro": 100,
+      "inspire": 100
+    },
+    "has_thumbnail": true
+  },
+  {
+    "id": "servingbowl_small",
+    "name": "Servingbowl Small",
+    "hands": {
+      "allegro": 100,
+      "inspire": 100
+    },
+    "has_thumbnail": true
+  },
+  {
+    "id": "shoe_organizer",
+    "name": "Shoe Organizer",
+    "hands": {
+      "allegro": 100,
+      "inspire": 100
+    },
+    "has_thumbnail": true
+  },
+  {
+    "id": "smallbowl",
+    "name": "Smallbowl",
+    "hands": {
+      "allegro": 100,
+      "inspire": 100
+    },
+    "has_thumbnail": true
+  },
+  {
+    "id": "soap_dispenser",
+    "name": "Soap Dispenser",
+    "hands": {
+      "allegro": 100,
+      "inspire": 100
+    },
+    "has_thumbnail": true
+  },
+  {
+    "id": "soaptray",
+    "name": "Soaptray",
+    "hands": {
+      "allegro": 100,
+      "inspire": 100
+    },
+    "has_thumbnail": true
+  },
+  {
+    "id": "spam_can",
+    "name": "Spam Can",
+    "hands": {
+      "allegro": 100,
+      "inspire": 100
+    },
+    "has_thumbnail": true
+  },
+  {
+    "id": "spicemill",
+    "name": "Spicemill",
+    "hands": {
+      "allegro": 100,
+      "inspire": 100
+    },
+    "has_thumbnail": true
+  },
+  {
+    "id": "spray_bottle",
+    "name": "Spray Bottle",
+    "hands": {
+      "allegro": 100,
+      "inspire": 100
+    },
+    "has_thumbnail": true
+  },
+  {
+    "id": "standing_frame",
+    "name": "Standing Frame",
+    "hands": {
+      "allegro": 100,
+      "inspire": 100
+    },
+    "has_thumbnail": true
+  },
+  {
+    "id": "tea_case",
+    "name": "Tea Case",
+    "hands": {
+      "allegro": 100,
+      "inspire": 100
+    },
+    "has_thumbnail": true
+  },
+  {
+    "id": "tennis_ball",
+    "name": "Tennis Ball",
+    "hands": {
+      "allegro": 21,
+      "inspire": 100
+    },
+    "has_thumbnail": true
+  },
+  {
+    "id": "thermo_clock",
+    "name": "Thermo Clock",
+    "hands": {
+      "allegro": 100,
+      "inspire": 100
+    },
+    "has_thumbnail": true
+  },
+  {
+    "id": "tissue_box",
+    "name": "Tissue Box",
+    "hands": {
+      "allegro": 100
+    },
+    "has_thumbnail": true
+  },
+  {
+    "id": "toilet_roll_holder_steel",
+    "name": "Toilet Roll Holder Steel",
+    "hands": {
+      "allegro": 100,
+      "inspire": 74
+    },
+    "has_thumbnail": true
+  },
+  {
+    "id": "toothbrush_holder",
+    "name": "Toothbrush Holder",
+    "hands": {
+      "allegro": 100,
+      "inspire": 100
+    },
+    "has_thumbnail": true
+  },
+  {
+    "id": "washing_brush",
+    "name": "Washing Brush",
+    "hands": {
+      "allegro": 100,
+      "inspire": 100
+    },
+    "has_thumbnail": true
+  },
+  {
+    "id": "washing_brush2",
+    "name": "Washing Brush2",
+    "hands": {
+      "allegro": 100,
+      "inspire": 100
+    },
+    "has_thumbnail": true
+  },
+  {
+    "id": "wateringcan",
+    "name": "Wateringcan",
+    "hands": {
+      "allegro": 100,
+      "inspire": 45
+    },
+    "has_thumbnail": true
+  },
+  {
+    "id": "white_candle_holder",
+    "name": "White Candle Holder",
+    "hands": {
+      "allegro": 100,
+      "inspire": 100
+    },
+    "has_thumbnail": true
+  },
+  {
+    "id": "white_clock",
+    "name": "White Clock",
+    "hands": {
+      "allegro": 100,
+      "inspire": 100
+    },
+    "has_thumbnail": true
+  },
+  {
+    "id": "white_hand_shower",
+    "name": "White Hand Shower",
+    "hands": {
+      "allegro": 100,
+      "inspire": 40
+    },
+    "has_thumbnail": true
+  },
+  {
+    "id": "white_pen_cup",
+    "name": "White Pen Cup",
+    "hands": {
+      "allegro": 100,
+      "inspire": 100
+    },
+    "has_thumbnail": true
+  },
+  {
+    "id": "white_plastic_box",
+    "name": "White Plastic Box",
+    "hands": {
+      "allegro": 100,
+      "inspire": 100
+    },
+    "has_thumbnail": true
+  },
+  {
+    "id": "white_soap_dish",
+    "name": "White Soap Dish",
+    "hands": {
+      "allegro": 100,
+      "inspire": 100
+    },
+    "has_thumbnail": true
+  },
+  {
+    "id": "white_table_lamp",
+    "name": "White Table Lamp",
+    "hands": {
+      "allegro": 100,
+      "inspire": 23
+    },
+    "has_thumbnail": true
+  },
+  {
+    "id": "white_watering_can",
+    "name": "White Watering Can",
+    "hands": {
+      "allegro": 100,
+      "inspire": 71
+    },
+    "has_thumbnail": true
+  },
+  {
+    "id": "white_wood_handle_watering_can",
+    "name": "White Wood Handle Watering Can",
+    "hands": {
+      "allegro": 100,
+      "inspire": 100
+    },
+    "has_thumbnail": true
+  },
+  {
+    "id": "wood_organizer",
+    "name": "Wood Organizer",
+    "hands": {
+      "allegro": 100,
+      "inspire": 100
+    },
+    "has_thumbnail": true
+  },
+  {
+    "id": "wood_tray_big",
+    "name": "Wood Tray Big",
+    "hands": {
+      "allegro": 100,
+      "inspire": 100
+    },
+    "has_thumbnail": true
+  },
+  {
+    "id": "wood_tray_small",
+    "name": "Wood Tray Small",
+    "hands": {
+      "allegro": 100,
+      "inspire": 100
+    },
+    "has_thumbnail": true
+  },
+  {
+    "id": "work_lamp",
+    "name": "Work Lamp",
+    "hands": {
+      "allegro": 100,
+      "inspire": 100
+    },
+    "has_thumbnail": true
+  },
+  {
+    "id": "yellow_funnel",
+    "name": "Yellow Funnel",
+    "hands": {
+      "allegro": 100,
+      "inspire": 45
+    },
+    "has_thumbnail": true
+  },
+  {
+    "id": "yellow_plastic_cup",
+    "name": "Yellow Plastic Cup",
+    "hands": {
+      "allegro": 100,
+      "inspire": 100
+    },
+    "has_thumbnail": true
+  },
+  {
+    "id": "yellow_plastic_glass",
+    "name": "Yellow Plastic Glass",
+    "hands": {
+      "allegro": 100,
+      "inspire": 58
+    },
+    "has_thumbnail": true
+  },
+  {
+    "id": "yellow_wash_tub",
+    "name": "Yellow Wash Tub",
+    "hands": {
+      "allegro": 100,
+      "inspire": 100
+    },
+    "has_thumbnail": true
+  }
+]
