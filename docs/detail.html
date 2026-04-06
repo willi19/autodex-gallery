@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Experiment Detail - AutoDex</title>
+  <link rel="stylesheet" href="css/style.css">
+  <style>
+    .detail-header {
+      display: flex; align-items: center; gap: 16px; margin-bottom: 24px; flex-wrap: wrap;
+    }
+    .detail-header h1 { font-size: 1.6em; }
+
+    /* Timing bar */
+    .timing-bar { margin-bottom: 24px; }
+    .timing-bar h3 { margin-bottom: 8px; font-size: 0.95em; color: var(--text-muted); }
+    .timing-segments {
+      display: flex; height: 28px; border-radius: var(--radius); overflow: hidden; margin-bottom: 6px;
+    }
+    .timing-seg {
+      display: flex; align-items: center; justify-content: center;
+      font-size: 0.7em; font-weight: 600; color: var(--bg); min-width: 40px;
+    }
+    .timing-seg.capture { background: #8b949e; }
+    .timing-seg.perception { background: #58a6ff; }
+    .timing-seg.planning { background: #d2a8ff; }
+    .timing-seg.execution { background: var(--green); }
+    .timing-legend {
+      display: flex; gap: 16px; font-size: 0.8em; color: var(--text-muted);
+    }
+    .timing-legend span::before {
+      content: ''; display: inline-block; width: 10px; height: 10px;
+      border-radius: 2px; margin-right: 4px; vertical-align: middle;
+    }
+    .timing-legend .l-cap::before { background: #8b949e; }
+    .timing-legend .l-per::before { background: #58a6ff; }
+    .timing-legend .l-pln::before { background: #d2a8ff; }
+    .timing-legend .l-exe::before { background: var(--green); }
+
+    /* Info cards */
+    .info-grid {
+      display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 12px; margin-bottom: 24px;
+    }
+    .info-card {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: var(--radius); padding: 12px 16px;
+    }
+    .info-card .label { font-size: 0.8em; color: var(--text-muted); margin-bottom: 4px; }
+    .info-card .value { font-size: 1.1em; font-weight: 600; }
+
+    /* Section */
+    .section { margin-bottom: 32px; }
+    .section h2 {
+      font-size: 1.1em; margin-bottom: 12px; padding-bottom: 8px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    /* Pose overlay grid */
+    .pose-grid {
+      display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+      gap: 8px;
+    }
+    .pose-grid img {
+      width: 100%; border-radius: 4px; background: #1a1f26;
+      cursor: pointer; transition: transform 0.2s;
+    }
+    .pose-grid img:hover { transform: scale(1.02); }
+    .pose-grid .cam-label {
+      font-size: 0.75em; color: var(--text-muted); margin-top: 2px;
+    }
+
+    /* Videos side by side */
+    .video-pair {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 16px;
+    }
+    .video-pair video { width: 100%; border-radius: var(--radius); background: #000; }
+    .video-label { font-size: 0.85em; color: var(--text-muted); margin-bottom: 4px; }
+
+    /* Planning funnel */
+    .funnel { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+    .funnel-step {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: var(--radius); padding: 8px 14px; text-align: center;
+    }
+    .funnel-step .num { font-size: 1.3em; font-weight: 700; }
+    .funnel-step .lbl { font-size: 0.75em; color: var(--text-muted); }
+    .funnel-arrow { color: var(--text-muted); font-size: 1.2em; }
+
+    @media (max-width: 640px) {
+      .video-pair { grid-template-columns: 1fr; }
+      .pose-grid { grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); }
+    }
+  </style>
+</head>
+<body>
+  <nav class="nav">
+    <a class="nav-logo" href="index.html">AutoDex</a>
+    <a href="gallery.html">Gallery</a>
+    <a href="experiments.html">Experiments</a>
+  </nav>
+
+  <div class="container">
+    <a href="#" class="back-link" id="back-link">&larr; Back</a>
+    <div class="detail-header">
+      <h1 id="title">Loading...</h1>
+    </div>
+
+    <!-- Timing -->
+    <div class="timing-bar" id="timing-section"></div>
+
+    <!-- Info cards -->
+    <div class="info-grid" id="info-grid"></div>
+
+    <!-- Planning funnel -->
+    <div class="section" id="planning-section">
+      <h2>Planning Pipeline</h2>
+      <div class="funnel" id="funnel"></div>
+    </div>
+
+    <!-- Pose overlay -->
+    <div class="section" id="pose-section">
+      <h2>6D Pose Detection</h2>
+      <div class="pose-grid" id="pose-grid"></div>
+    </div>
+
+    <!-- Videos -->
+    <div class="section" id="video-section">
+      <h2>Execution</h2>
+      <div style="margin-bottom:8px;">
+        <select class="obj-select" id="cam-select" onchange="switchDetailCam(this.value)"></select>
+      </div>
+      <div class="video-pair">
+        <div>
+          <div class="video-label">Turntable (grasp candidate)</div>
+          <video id="turntable-video" controls loop muted autoplay playsinline></video>
+        </div>
+        <div>
+          <div class="video-label">Experiment recording</div>
+          <video id="exp-video" controls loop muted autoplay playsinline></video>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const HF_BASE = 'https://huggingface.co/datasets/willi19/autodex-gallery/resolve/main';
+    const params = new URLSearchParams(location.search);
+    const hand = params.get('hand');
+    const obj = params.get('obj');
+    const rank = params.get('rank');
+
+    if (!hand || !obj || rank === null) { location.href = 'experiments.html'; }
+
+    const rankStr = String(rank).padStart(3, '0');
+    let expData = null;
+    let detailData = null;
+
+    document.getElementById('back-link').href = `object.html?obj=${obj}&hand=${hand}&view=experiments`;
+
+    // Load experiments.json + detail metadata
+    Promise.all([
+      fetch('experiments.json').then(r => r.json()),
+      fetch(`${HF_BASE}/experiments/${hand}/${obj}/${rankStr}/meta.json`).then(r => r.json()).catch(() => null)
+    ]).then(([experiments, meta]) => {
+      expData = experiments[hand]?.[obj]?.[String(rank)];
+      detailData = meta;
+      renderPage();
+    });
+
+    function renderPage() {
+      if (!expData) {
+        document.getElementById('title').textContent = 'Experiment not found';
+        return;
+      }
+
+      const status = expData.status === 'success'
+        ? '<span class="badge badge-success">Success</span>'
+        : '<span class="badge badge-fail">Failed</span>';
+      const objName = obj.replace(/_/g, ' ');
+      document.getElementById('title').innerHTML =
+        `${objName} — Grasp #${parseInt(rank)+1} ${status}`;
+      document.title = `${objName} #${parseInt(rank)+1} - AutoDex`;
+
+      // Try to load result.json for detailed timing
+      fetch(`${HF_BASE}/experiments/${hand}/${obj}/${rankStr}/result.json`)
+        .then(r => r.json())
+        .then(result => renderDetail(result))
+        .catch(() => renderDetail(null));
+    }
+
+    function renderDetail(result) {
+      // Timing bar
+      if (result?.timing) {
+        const t = result.timing;
+        const total = (t.capture_s||0) + (t.perception_s||0) + (t.plan_s||0) + (t.execute_s||0);
+        const pct = v => ((v / total) * 100).toFixed(1) + '%';
+        document.getElementById('timing-section').innerHTML = `
+          <h3>Total: ${total.toFixed(1)}s</h3>
+          <div class="timing-segments">
+            <div class="timing-seg capture" style="width:${pct(t.capture_s||0)}">${(t.capture_s||0).toFixed(1)}s</div>
+            <div class="timing-seg perception" style="width:${pct(t.perception_s||0)}">${(t.perception_s||0).toFixed(1)}s</div>
+            <div class="timing-seg planning" style="width:${pct(t.plan_s||0)}">${(t.plan_s||0).toFixed(1)}s</div>
+            <div class="timing-seg execution" style="width:${pct(t.execute_s||0)}">${(t.execute_s||0).toFixed(1)}s</div>
+          </div>
+          <div class="timing-legend">
+            <span class="l-cap">Capture</span>
+            <span class="l-per">Perception</span>
+            <span class="l-pln">Planning</span>
+            <span class="l-exe">Execution</span>
+          </div>`;
+      }
+
+      // Info cards
+      const cards = [];
+      cards.push({label: 'Status', value: expData.status === 'success' ? 'Success' : 'Failed'});
+      cards.push({label: 'Scene', value: expData.scene_info?.join('/') || '-'});
+      cards.push({label: 'Trials', value: `${expData.n_success}/${expData.n_trials} success`});
+      if (result?.timing?.perception_detail) {
+        const pd = result.timing.perception_detail;
+        cards.push({label: 'Depth Method', value: pd.depth_method || '-'});
+        cards.push({label: 'Best Camera', value: pd.best_serial || '-'});
+        cards.push({label: 'Masks', value: pd.n_masks || '-'});
+        cards.push({label: 'Poses', value: pd.n_poses || '-'});
+      }
+      document.getElementById('info-grid').innerHTML = cards.map(c =>
+        `<div class="info-card"><div class="label">${c.label}</div><div class="value">${c.value}</div></div>`
+      ).join('');
+
+      // Planning funnel (from meta.json which has plan timing)
+      if (detailData) {
+        // detailData is meta.json from upload - may not have plan info
+        // Try loading plan timing from HF
+        fetch(`${HF_BASE}/experiments/${hand}/${obj}/${rankStr}/plan_timing.json`)
+          .then(r => r.json())
+          .then(renderFunnel)
+          .catch(() => {
+            document.getElementById('planning-section').style.display = 'none';
+          });
+      } else {
+        document.getElementById('planning-section').style.display = 'none';
+      }
+
+      // Pose overlay images
+      const cameras = expData.cameras || [];
+      if (cameras.length > 0) {
+        document.getElementById('pose-grid').innerHTML = cameras.map(cam =>
+          `<div>
+            <img src="${HF_BASE}/experiments/${hand}/${obj}/${rankStr}/pose_overlay/${cam}.png"
+                 onerror="this.style.display='none'" loading="lazy">
+            <div class="cam-label">${cam}</div>
+          </div>`
+        ).join('');
+      } else {
+        document.getElementById('pose-section').style.display = 'none';
+      }
+
+      // Videos
+      const turntableUrl = `${HF_BASE}/turntable/${hand}/${obj}/${rankStr}/turntable.mp4`;
+      document.getElementById('turntable-video').src = turntableUrl;
+
+      // Camera selector
+      const select = document.getElementById('cam-select');
+      select.innerHTML = cameras.map(c => `<option value="${c}">${c}</option>`).join('');
+      if (cameras.length > 0) {
+        switchDetailCam(cameras[0]);
+      }
+    }
+
+    function renderFunnel(plan) {
+      const steps = [
+        {num: plan.n_total, lbl: 'Total'},
+        {num: plan.n_total - plan.n_backward, lbl: 'Forward'},
+        {num: plan.n_valid, lbl: 'No collision'},
+        {num: plan.n_ik_success, lbl: 'IK success'},
+        {num: plan.n_plan_attempts <= 1 ? 1 : plan.n_plan_attempts, lbl: 'Planned'},
+      ];
+      document.getElementById('funnel').innerHTML = steps.map((s, i) =>
+        (i > 0 ? '<span class="funnel-arrow">→</span>' : '') +
+        `<div class="funnel-step"><div class="num">${s.num}</div><div class="lbl">${s.lbl}</div></div>`
+      ).join('');
+    }
+
+    function switchDetailCam(cam) {
+      const url = `${HF_BASE}/experiments/${hand}/${obj}/${rankStr}/${cam}.mp4`;
+      const video = document.getElementById('exp-video');
+      video.src = url;
+      video.load();
+      video.play().catch(() => {});
+    }
+  </script>
+</body>
+</html>

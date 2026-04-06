@@ -441,10 +441,13 @@
           <div class="exp-row" id="exp-${idx}">
             <div class="exp-row-header">
               <h3>Grasp #${idx + 1} ${statusBadge}</h3>
-              ${cameras.length > 0 || hasMerged ? `
-                <select class="cam-select" data-idx="${idx}" onchange="switchCam(this)">
-                  ${camOptions}
-                </select>` : ''}
+              <span>
+                ${cameras.length > 0 || hasMerged ? `
+                  <select class="cam-select" data-idx="${idx}" onchange="switchCam(this)">
+                    ${camOptions}
+                  </select>` : ''}
+                <a href="detail.html?hand=${currentHand}&obj=${currentObj}&rank=${idx}" style="margin-left:8px;font-size:0.85em;">Detail &rarr;</a>
+              </span>
             </div>
             <div class="exp-videos">
               <div class="exp-video-cell">
