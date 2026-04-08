@@ -518,7 +518,10 @@
   {
     "id": "pepsi_light",
     "name": "Pepsi Light",
-    "hands": {},
+    "hands": {
+      "allegro": 100,
+      "inspire": 100
+    },
     "has_thumbnail": true
   },
   {
