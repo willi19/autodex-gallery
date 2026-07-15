@@ -11,81 +11,59 @@
       max-width: none;
     }
 
-    .paper-hero {
-      position: relative;
-      min-height: calc(54vh - 126px);
-      overflow: hidden;
-      display: flex;
-      align-items: center;
-      background: radial-gradient(130% 120% at 15% 0%, #2b2521 0%, #191512 52%, #0f0c0a 100%);
+    .intro-head {
+      padding-top: clamp(40px, 6vw, 72px);
     }
 
-    .hero-copy {
-      position: relative;
-      z-index: 1;
-      width: min(1180px, 100%);
-      margin: 0 auto;
-      padding: clamp(42px, 7vw, 86px) 32px;
-      color: #fff;
+    .intro-title {
+      font-size: clamp(3rem, 8vw, 6rem);
+      line-height: .95;
+      letter-spacing: -0.01em;
+      margin-top: 6px;
     }
 
-    .hero-kicker {
-      color: rgba(255, 255, 255, .78);
-      font-size: .8em;
-      font-weight: 850;
-      letter-spacing: .08em;
-      text-transform: uppercase;
-    }
-
-    .hero-copy h1 {
-      max-width: 900px;
-      margin-top: 10px;
-      font-size: clamp(3.4rem, 8vw, 7rem);
-      line-height: .92;
-      letter-spacing: 0;
-    }
-
-    .hero-copy p {
-      max-width: 760px;
-      margin-top: 18px;
-      color: rgba(255, 255, 255, .82);
-      font-size: clamp(1.02rem, 1.8vw, 1.35rem);
+    .intro-lede {
+      max-width: 720px;
+      margin-top: 16px;
+      color: var(--text-muted);
+      font-size: clamp(1.02rem, 1.6vw, 1.3rem);
       line-height: 1.5;
     }
 
-    .hero-actions {
+    .intro-actions {
       display: flex;
       flex-wrap: wrap;
       gap: 10px;
-      margin-top: 24px;
+      margin-top: 26px;
     }
 
-    .hero-btn {
+    .intro-btn {
       display: inline-flex;
       align-items: center;
       justify-content: center;
       min-height: 42px;
-      padding: 10px 16px;
-      border: 1px solid rgba(255, 255, 255, .34);
+      padding: 10px 18px;
+      border: 1px solid var(--line-strong);
       border-radius: var(--radius);
-      background: rgba(255, 255, 255, .12);
-      color: #fff;
+      background: var(--surface);
+      color: var(--text);
       font-weight: 850;
-      backdrop-filter: blur(10px);
     }
 
-    .hero-btn.primary {
+    .intro-btn:hover {
+      background: var(--surface-2);
+      color: var(--text);
+    }
+
+    .intro-btn.primary {
       border-color: var(--accent);
       background: var(--accent);
-    }
-
-    .hero-btn:hover {
       color: #fff;
-      background: rgba(255, 255, 255, .2);
     }
 
-    .hero-btn.primary:hover {
+    .intro-btn.primary:hover {
       background: var(--accent-hover);
+      color: #fff;
     }
 
     .landing-section {
@@ -104,37 +82,6 @@
       margin-top: 10px;
       color: var(--text-muted);
       max-width: 780px;
-    }
-
-    .landing-metrics {
-      display: grid;
-      grid-template-columns: repeat(4, minmax(0, 1fr));
-      gap: 12px;
-      margin-top: 22px;
-    }
-
-    .landing-flow {
-      display: grid;
-      grid-template-columns: repeat(3, minmax(0, 1fr));
-      gap: 14px;
-      margin-top: 24px;
-    }
-
-    .flow-item {
-      padding: 16px;
-      background: var(--surface);
-      border: 1px solid var(--line);
-      border-radius: var(--radius);
-      box-shadow: var(--shadow-soft);
-    }
-
-    .flow-item h3 {
-      font-size: 1em;
-    }
-
-    .flow-item p {
-      margin-top: 6px;
-      font-size: .92em;
     }
 
     .dataset-table-wrap {
@@ -230,19 +177,12 @@
     }
 
     @media (max-width: 760px) {
-      .hero-copy {
-        padding: 38px 18px;
-        width: 100%;
-        box-sizing: border-box;
+      .intro-title {
+        font-size: clamp(2.4rem, 12vw, 3.6rem);
       }
 
-      .hero-copy h1 {
-        font-size: clamp(2.6rem, 13vw, 4.2rem);
-      }
-
-      .hero-copy p,
-      .hero-copy h1,
-      .hero-kicker {
+      .intro-title,
+      .intro-lede {
         max-width: 100%;
         overflow-wrap: break-word;
         word-break: keep-all;
@@ -251,11 +191,6 @@
       .landing-section {
         padding-left: 18px;
         padding-right: 18px;
-      }
-
-      .landing-metrics,
-      .landing-flow {
-        grid-template-columns: 1fr;
       }
     }
   </style>
@@ -271,148 +206,77 @@
   </nav>
 
   <main class="landing-page">
-    <section class="paper-hero">
-      <div class="hero-copy">
-        <div class="hero-kicker">Dexterous manipulation dataset</div>
-        <h1>AutoDex</h1>
-        <p>Multi-view real-robot grasp executions over everyday objects &mdash; browse by object, pose, and camera view, with interactive 3D of every executed grasp.</p>
-        <div class="hero-actions">
-          <a class="hero-btn primary" href="gallery.html">Open Gallery</a>
-          <a class="hero-btn" href="#dataset">Explore the dataset</a>
-        </div>
-      </div>
-    </section>
-
-    <section class="landing-section">
-      <h2>Explore</h2>
-      <p>The gallery pairs each grasp candidate with its synchronized real-world execution &mdash; pick an episode, switch camera views, and load the interactive 3D of the executed grasp.</p>
-
-      <div class="landing-metrics">
-        <div class="metric-card">
-          <div class="metric-label">Objects</div>
-          <div class="metric-value" id="obj-count">-</div>
-        </div>
-        <div class="metric-card">
-          <div class="metric-label">Grasps</div>
-          <div class="metric-value" id="exp-count">-</div>
-        </div>
-        <div class="metric-card">
-          <div class="metric-label">Success</div>
-          <div class="metric-value" id="success-count">-</div>
-        </div>
-        <div class="metric-card">
-          <div class="metric-label">Views</div>
-          <div class="metric-value" id="view-count">-</div>
-        </div>
-      </div>
-
-      <div class="landing-flow">
-        <div class="flow-item">
-          <h3>Episode Gallery</h3>
-          <p>Object, pose, and view selectors lead into the main video panel.</p>
-        </div>
-        <div class="flow-item">
-          <h3>Robot Execution</h3>
-          <p>Each episode records a hand, grasp candidate, result, and 24-camera synchronized capture.</p>
-        </div>
-        <div class="flow-item">
-          <h3>Interactive 3D</h3>
-          <p>Each episode loads an animated GLB of the executed trajectory — orbit, scrub, switch camera views, and jump straight to the dataset-defined grasp frame.</p>
-        </div>
+    <section class="landing-section intro-head">
+      <h1 class="intro-title">AutoDex</h1>
+      <div class="intro-actions">
+        <a class="intro-btn primary" href="gallery.html">Open Gallery</a>
+        <a class="intro-btn" href="#dataset">Explore the dataset</a>
       </div>
     </section>
 
     <section class="landing-section" id="dataset" style="border-top:1px solid var(--line);">
-      <div class="doc-kicker">For researchers &middot; HuggingFace</div>
       <h2>Dataset</h2>
-      <p>Real-robot dexterous grasp executions with multi-view video, calibrated cameras, 6-DOF object poses, and the executed grasp for each trial &mdash; 2,614 trials across Allegro and Inspire hands, one episode tree per subset.</p>
+      <p>Real-robot dexterous grasp executions with synchronized multi-view video, calibrated cameras, 6-DoF object poses, and executed grasp annotations. The release has 2,610 trials collected with the Allegro and Inspire hands; each subset follows the same per-episode directory structure.</p>
 
       <div class="dataset-table-wrap">
         <table class="dataset-table">
           <thead>
-            <tr><th>Dataset</th><th>Hand</th><th>Object-pose source</th><th>Trials (main)</th></tr>
+            <tr><th>Subset</th><th>Hand</th><th>Trials</th></tr>
           </thead>
           <tbody>
-            <tr><td><code>selected_100</code> + <code>corl_selected_100</code></td><td>xArm6 + Allegro (16-DOF)</td><td>SAM3 + FoundationPose &middot; MV-GoTrack</td><td><span class="num">2,230</span></td></tr>
-            <tr><td><code>selected_100_inspire</code></td><td>xArm6 + Inspire (6-DOF)</td><td>MV-GoTrack multi-view tracking</td><td><span class="num">384</span></td></tr>
+            <tr><td><code>allegro</code></td><td>xArm6 + Allegro (16-DoF)</td><td><span class="num">2,226</span></td></tr>
+            <tr><td><code>inspire</code></td><td>xArm6 + Inspire (6-DoF)</td><td><span class="num">384</span></td></tr>
           </tbody>
         </table>
       </div>
-      <p style="margin-top:12px;font-size:.9em;">Pose-outlier trials (silhouette MSE &gt; 0.003) live in <code>{dataset}_pose_outlier/</code>; incomplete captures in <code>{dataset}_error/</code>. 24 synchronized FLIR cameras; every per-view file is keyed by the same camera serial.</p>
 
       <div class="subhead">Per-episode structure</div>
       <pre class="code-block"><span class="c"># one grasp trial</span>
-{dataset}/{object}/{timestamp}/
-├── pose_world.npy          <span class="c"># (4,4) object 6D pose in world frame</span>
-├── C2R.npy                 <span class="c"># (4,4) T_world_robot</span>
+{hand}/{object}/{timestamp}/
+├── pose_world.npy          <span class="c"># 6-DoF object pose as a 4×4 transform (T_world_object)</span>
+├── R2C.npy                 <span class="c"># (4,4) T_world_robot (robot base → world)</span>
 ├── cam_param/              <span class="c"># intrinsics.json + extrinsics.json (per serial)</span>
 ├── videos/{serial}.avi     <span class="c"># 24 synchronized camera videos (undistorted)</span>
-├── init_capture/images/    <span class="c"># frame-0 still per camera</span>
 ├── arm/                    <span class="c"># executed arm trajectory: action / state .npy</span>
 ├── hand/                   <span class="c"># executed hand trajectory (16 Allegro | 6 Inspire)</span>
-├── raw/                    <span class="c"># unsynchronized raw sensor logs</span>
 ├── executed_grasp/         <span class="c"># the grasp the robot actually performed</span>
 │   ├── wrist_se3.npy       <span class="c"># (4,4) wrist pose in the OBJECT frame</span>
 │   ├── grasp_pose.npy      <span class="c"># (16|6) finger joints at grasp</span>
 │   └── meta.json           <span class="c"># grasp_frame / grasp_time / success / states</span>
-├── object_tracking/        <span class="c"># 6D object trajectory (gotrack subsets)</span>
+├── object_tracking/        <span class="c"># 6-DoF object trajectory (gotrack subsets)</span>
 │   └── gotrack_output/world_pose_records.json
 └── recompute_pose.json     <span class="c"># {sil_loss, reject} pose-quality record</span></pre>
 
       <div class="subhead">Coordinate conventions</div>
       <ul class="conventions">
-        <li><code>pose_world</code> is <code>T_world_object</code>: <code>world_point = pose_world @ [x,y,z,1]ᵀ</code>.</li>
-        <li><code>extrinsics[serial]</code> is <code>T_camera_world</code>: <code>pose_cam = extrinsics[s] @ pose_world</code>, then <code>pixel = K @ pose_cam @ point</code> (use <code>intrinsics_undistort</code>).</li>
-        <li><code>C2R</code> is <code>T_world_robot</code>: robot-base → world is <code>C2R @ p</code>.</li>
+        <li><code>pose_world</code> = <code>T_world_object</code> (object → world). For an object-frame point <code>p</code>: <code>world_point = pose_world @ p</code>.</li>
+        <li>Project into camera <code>s</code>: <code>p_camera = extrinsics[s] @ pose_world @ p</code>, then <code>u ~ K @ p_camera[:3]</code> (divide by depth; use <code>intrinsics_undistort</code>).</li>
+        <li><code>R2C</code> = <code>T_world_robot</code>: robot-base &rarr; world is <code>R2C @ p</code>.</li>
         <li><code>executed_grasp/wrist_se3</code> is the executed wrist in the <strong>object frame</strong>, so a grasp replays relative to the object.</li>
       </ul>
 
       <div class="subhead">Download</div>
       <pre class="code-block">pip install huggingface_hub
 
-<span class="c"># Python — dataset subsets only (skips the web-gallery assets)</span>
+<span class="c"># Python — dataset only (skips the web-gallery assets)</span>
 <span class="k">from</span> huggingface_hub <span class="k">import</span> snapshot_download
 snapshot_download(<span class="k">"willi19/autodex-gallery"</span>, repo_type=<span class="k">"dataset"</span>, local_dir=<span class="k">"autodex"</span>,
-                  allow_patterns=[<span class="k">"selected_100/*"</span>, <span class="k">"corl_selected_100/*"</span>, <span class="k">"selected_100_inspire/*"</span>])
+                  allow_patterns=[<span class="k">"allegro/*"</span>, <span class="k">"inspire/*"</span>])
 
-<span class="c"># CLI — all subsets, or just one subset / object</span>
+<span class="c"># CLI — both hands, or just one subset / object</span>
 hf download willi19/autodex-gallery --repo-type dataset --local-dir autodex \
-  --include <span class="k">"selected_100/*"</span> <span class="k">"corl_selected_100/*"</span> <span class="k">"selected_100_inspire/*"</span>
-hf download willi19/autodex-gallery --repo-type dataset --include <span class="k">"corl_selected_100/attached_container/*"</span></pre>
+  --include <span class="k">"allegro/*"</span> <span class="k">"inspire/*"</span>
+hf download willi19/autodex-gallery --repo-type dataset --include <span class="k">"allegro/attached_container/*"</span></pre>
 
       <div class="subhead">Loading example</div>
       <pre class="code-block"><span class="k">import</span> numpy <span class="k">as</span> np, json
 
-trial = <span class="k">"corl_selected_100/attached_container/20260330_164351"</span>
+trial = <span class="k">"allegro/attached_container/20260330_164351"</span>
 pose_world = np.load(<span class="k">f"{trial}/pose_world.npy"</span>)          <span class="c"># (4,4) object → world</span>
 wrist_obj  = np.load(<span class="k">f"{trial}/executed_grasp/wrist_se3.npy"</span>) <span class="c"># (4,4) wrist in object frame</span>
 fingers    = np.load(<span class="k">f"{trial}/executed_grasp/grasp_pose.npy"</span>) <span class="c"># (16,) Allegro</span>
 meta       = json.load(open(<span class="k">f"{trial}/executed_grasp/meta.json"</span>)) <span class="c"># grasp_frame, success, states</span></pre>
     </section>
   </main>
-
-  <script>
-    Promise.all([
-      fetch('catalog.json').then(r => r.json()),
-      fetch('experiments.json').then(r => r.json()).catch(() => ({}))
-    ]).then(([catalog, experiments]) => {
-      let totalExp = 0;
-      let success = 0;
-      const views = new Set();
-      Object.values(experiments).forEach(hand => {
-        Object.values(hand || {}).forEach(obj => {
-          Object.values(obj || {}).forEach(exp => {
-            totalExp += 1;
-            if (exp.status === 'success') success += 1;
-            (exp.cameras || []).forEach(cam => views.add(cam));
-          });
-        });
-      });
-      document.getElementById('obj-count').textContent = catalog.length;
-      document.getElementById('exp-count').textContent = totalExp.toLocaleString();
-      document.getElementById('success-count').textContent = success.toLocaleString();
-      document.getElementById('view-count').textContent = views.size.toLocaleString();
-    });
-  </script>
 </body>
 </html>
