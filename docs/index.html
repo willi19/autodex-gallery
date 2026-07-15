@@ -153,6 +153,89 @@
       font-size: .92em;
     }
 
+    .dataset-table-wrap {
+      margin-top: 22px;
+      overflow-x: auto;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+    }
+
+    .dataset-table {
+      width: 100%;
+      min-width: 560px;
+      border-collapse: collapse;
+      font-size: .92em;
+    }
+
+    .dataset-table th,
+    .dataset-table td {
+      text-align: left;
+      padding: 11px 14px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .dataset-table tr:last-child td,
+    .dataset-table tbody tr:last-child td {
+      border-bottom: none;
+    }
+
+    .dataset-table th {
+      color: var(--text-muted);
+      font-weight: 850;
+      font-size: .82em;
+      letter-spacing: .04em;
+      text-transform: uppercase;
+      background: var(--surface);
+    }
+
+    .dataset-table td code,
+    .landing-section p code {
+      font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+      font-size: .92em;
+      font-weight: 700;
+      color: var(--text);
+    }
+
+    .dataset-table td .num {
+      font-variant-numeric: tabular-nums;
+      font-weight: 850;
+    }
+
+    .code-block {
+      margin-top: 18px;
+      padding: 16px 18px;
+      background: #171513;
+      color: #ece6dc;
+      border-radius: var(--radius);
+      overflow-x: auto;
+      font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+      font-size: .85em;
+      line-height: 1.6;
+      white-space: pre;
+    }
+
+    .code-block .c { color: #9c968b; }
+    .code-block .k { color: #d8b878; }
+
+    .subhead {
+      margin-top: 34px;
+      font-size: 1.15rem;
+      font-weight: 850;
+    }
+
+    .conventions {
+      margin-top: 16px;
+      display: grid;
+      gap: 8px;
+      padding-left: 18px;
+    }
+
+    .conventions li {
+      color: var(--text-muted);
+      font-size: .95em;
+      line-height: 1.5;
+    }
+
     @media (max-width: 760px) {
       .hero-copy {
         padding: 38px 18px;
@@ -230,9 +313,75 @@
         </div>
         <div class="flow-item">
           <h3>Interactive 3D</h3>
-          <p>The gallery is ready to load GLB or GLTF assets once reconstruction exports are registered.</p>
+          <p>Each episode loads an animated GLB of the executed trajectory — orbit, scrub, switch camera views, and jump straight to the dataset-defined grasp frame.</p>
         </div>
       </div>
+    </section>
+
+    <section class="landing-section" id="dataset">
+      <h2>Dataset</h2>
+      <p>Real-robot dexterous grasp executions with multi-view video, calibrated cameras, 6-DOF object poses, and the executed grasp for each trial. Three subsets, one episode tree each.</p>
+
+      <div class="dataset-table-wrap">
+        <table class="dataset-table">
+          <thead>
+            <tr><th>Dataset</th><th>Hand</th><th>Object-pose source</th><th>Trials (main)</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><code>selected_100</code></td><td>xArm6 + Allegro (16-DOF)</td><td>SAM3 + FoundationPose (per-frame silhouette-refined)</td><td><span class="num">1,656</span></td></tr>
+            <tr><td><code>corl_selected_100</code></td><td>xArm6 + Allegro (16-DOF)</td><td>MV-GoTrack multi-view tracking</td><td><span class="num">574</span></td></tr>
+            <tr><td><code>selected_100_inspire</code></td><td>xArm6 + Inspire (6-DOF)</td><td>MV-GoTrack multi-view tracking</td><td><span class="num">384</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p style="margin-top:12px;font-size:.9em;">Pose-outlier trials (silhouette MSE &gt; 0.003) live in <code>{dataset}_pose_outlier/</code>; incomplete captures in <code>{dataset}_error/</code>. 24 synchronized FLIR cameras; every per-view file is keyed by the same camera serial.</p>
+
+      <div class="subhead">Per-episode structure</div>
+      <pre class="code-block"><span class="c"># one grasp trial</span>
+{dataset}/{object}/{timestamp}/
+├── pose_world.npy          <span class="c"># (4,4) object 6D pose in world frame</span>
+├── C2R.npy                 <span class="c"># (4,4) T_world_robot</span>
+├── cam_param/              <span class="c"># intrinsics.json + extrinsics.json (per serial)</span>
+├── videos/{serial}.avi     <span class="c"># 24 synchronized camera videos (undistorted)</span>
+├── init_capture/images/    <span class="c"># frame-0 still per camera</span>
+├── arm/                    <span class="c"># executed arm trajectory: action / state .npy</span>
+├── hand/                   <span class="c"># executed hand trajectory (16 Allegro | 6 Inspire)</span>
+├── raw/                    <span class="c"># unsynchronized raw sensor logs</span>
+├── executed_grasp/         <span class="c"># the grasp the robot actually performed</span>
+│   ├── wrist_se3.npy       <span class="c"># (4,4) wrist pose in the OBJECT frame</span>
+│   ├── grasp_pose.npy      <span class="c"># (16|6) finger joints at grasp</span>
+│   └── meta.json           <span class="c"># grasp_frame / grasp_time / success / states</span>
+├── object_tracking/        <span class="c"># 6D object trajectory (gotrack subsets)</span>
+│   └── gotrack_output/world_pose_records.json
+└── recompute_pose.json     <span class="c"># {sil_loss, reject} pose-quality record</span></pre>
+
+      <div class="subhead">Coordinate conventions</div>
+      <ul class="conventions">
+        <li><code>pose_world</code> is <code>T_world_object</code>: <code>world_point = pose_world @ [x,y,z,1]ᵀ</code>.</li>
+        <li><code>extrinsics[serial]</code> is <code>T_camera_world</code>: <code>pose_cam = extrinsics[s] @ pose_world</code>, then <code>pixel = K @ pose_cam @ point</code> (use <code>intrinsics_undistort</code>).</li>
+        <li><code>C2R</code> is <code>T_world_robot</code>: robot-base → world is <code>C2R @ p</code>.</li>
+        <li><code>executed_grasp/wrist_se3</code> is the executed wrist in the <strong>object frame</strong>, so a grasp replays relative to the object.</li>
+      </ul>
+
+      <div class="subhead">Download</div>
+      <pre class="code-block">pip install huggingface_hub
+
+<span class="c"># Python</span>
+<span class="k">from</span> huggingface_hub <span class="k">import</span> snapshot_download
+snapshot_download(<span class="k">"willi19/autodex-gallery"</span>, repo_type=<span class="k">"dataset"</span>, local_dir=<span class="k">"autodex"</span>)
+
+<span class="c"># CLI — whole dataset, or a single subset / object</span>
+hf download willi19/autodex-gallery --repo-type dataset --local-dir autodex
+hf download willi19/autodex-gallery --repo-type dataset --include <span class="k">"interactive_3d/inspire/apple/*"</span></pre>
+
+      <div class="subhead">Loading example</div>
+      <pre class="code-block"><span class="k">import</span> numpy <span class="k">as</span> np, json
+
+trial = <span class="k">"corl_selected_100/attached_container/20260330_164351"</span>
+pose_world = np.load(<span class="k">f"{trial}/pose_world.npy"</span>)          <span class="c"># (4,4) object → world</span>
+wrist_obj  = np.load(<span class="k">f"{trial}/executed_grasp/wrist_se3.npy"</span>) <span class="c"># (4,4) wrist in object frame</span>
+fingers    = np.load(<span class="k">f"{trial}/executed_grasp/grasp_pose.npy"</span>) <span class="c"># (16,) Allegro</span>
+meta       = json.load(open(<span class="k">f"{trial}/executed_grasp/meta.json"</span>)) <span class="c"># grasp_frame, success, states</span></pre>
     </section>
   </main>
 

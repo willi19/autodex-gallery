@@ -271,7 +271,7 @@
       bottom: 12px;
       z-index: 3;
       display: grid;
-      grid-template-columns: auto minmax(0, 1fr) auto auto;
+      grid-template-columns: auto minmax(0, 1fr) auto auto auto;
       align-items: center;
       gap: 10px;
       padding: 9px 10px;
@@ -678,10 +678,6 @@
         <label id="status-filter-label">Outcome</label>
         <div class="check-group" id="status-filter" role="group" aria-labelledby="status-filter-label"></div>
       </div>
-      <div class="field">
-        <label id="scene-filter-label">Scene</label>
-        <div class="check-group" id="scene-filter" role="group" aria-labelledby="scene-filter-label"></div>
-      </div>
     </section>
 
     <section class="explorer-layout">
@@ -762,6 +758,7 @@
                 <button id="interactive-3d-play" type="button">Pause</button>
                 <input id="interactive-3d-scrub" type="range" min="0" max="1000" value="0">
                 <div class="interactive-3d-readout" id="interactive-3d-readout">0.00s</div>
+                <button id="interactive-3d-grasp" type="button" title="Jump to the grasp frame" disabled>Grasp frame</button>
                 <select id="interactive-3d-speed" aria-label="3D playback speed">
                   <option value="0.5">0.5x</option>
                   <option value="1" selected>1x</option>
@@ -778,7 +775,7 @@
 
   <script>
     const ORIGINAL_HF_BASE = 'https://huggingface.co/datasets/willi19/autodex-gallery/resolve/main';
-    const PROXY_HF_BASE = 'https://huggingface.co/datasets/happyguma/autodex-gallery-proxy/resolve/main';
+    const PROXY_HF_BASE = 'https://huggingface.co/datasets/willi19/autodex-gallery/resolve/main';
     const THREE_MODULE_URL = 'https://unpkg.com/three@0.160.0/build/three.module.js';
     const ORBIT_CONTROLS_URL = 'https://unpkg.com/three@0.160.0/examples/jsm/controls/OrbitControls.js';
     const GLTF_LOADER_URL = 'https://unpkg.com/three@0.160.0/examples/jsm/loaders/GLTFLoader.js';
@@ -816,6 +813,9 @@
       cameraViews: null,
       currentCameraViewsSrc: '',
       cameraViewsCache: new Map(),
+      graspFraction: null,
+      currentManifestSrc: '',
+      manifestCache: new Map(),
       syncEventsBound: false,
       frame: null,
       resizeObserver: null
@@ -826,7 +826,6 @@
       'summary-pills',
       'hand-filter',
       'status-filter',
-      'scene-filter',
       'object-selector',
       'pose-selector',
       'view-selector',
@@ -851,6 +850,7 @@
       'interactive-3d-play',
       'interactive-3d-scrub',
       'interactive-3d-readout',
+      'interactive-3d-grasp',
       'interactive-3d-speed',
       'object-strip',
       'object-count',
@@ -881,7 +881,7 @@
     });
 
     function bindEvents() {
-      ['hand-filter', 'status-filter', 'scene-filter'].forEach(id => {
+      ['hand-filter', 'status-filter'].forEach(id => {
         els[id].addEventListener('change', syncAfterFilterChange);
       });
 
@@ -1080,10 +1080,8 @@
     function fillFilters() {
       const hands = orderedValues(state.episodes.map(ep => ep.hand), ['allegro', 'inspire']);
       const statuses = orderedValues(state.episodes.map(ep => ep.status), ['success', 'fail']);
-      const scenes = orderedValues(state.episodes.map(ep => ep.scene));
       renderCheckboxGroup('hand-filter', 'hand', hands);
       renderCheckboxGroup('status-filter', 'status', statuses);
-      renderCheckboxGroup('scene-filter', 'scene', scenes);
     }
 
     function orderedValues(values, preferred = []) {
@@ -1133,8 +1131,7 @@
     function filters() {
       return {
         hands: checkedValues('hand-filter'),
-        statuses: checkedValues('status-filter'),
-        scenes: checkedValues('scene-filter')
+        statuses: checkedValues('status-filter')
       };
     }
 
@@ -1146,8 +1143,7 @@
       const f = filters();
       return state.episodes.filter(ep =>
         f.hands.has(ep.hand) &&
-        f.statuses.has(ep.status) &&
-        f.scenes.has(ep.scene)
+        f.statuses.has(ep.status)
       );
     }
 
@@ -1204,7 +1200,7 @@
       state.mediaRequested = Boolean(state.currentCamera);
 
       els['selected-title'].textContent = `${ep.objName} - ${titleize(ep.hand)} - ${ep.rankLabel}`;
-      els['selected-subtitle'].textContent = `${titleize(ep.scene)} scene ${ep.sceneInfo.slice(1).join(' / ')} | view ${state.currentCamera || 'none'} | ${ep.status}`;
+      els['selected-subtitle'].textContent = `View ${state.currentCamera || 'none'} | ${ep.status}`;
 
       if (state.mediaRequested && state.currentCamera) {
         showVideo(videoUrl(ep, state.currentCamera), originalVideoUrl(ep, state.currentCamera));
@@ -1214,7 +1210,7 @@
 
       const model = modelUrl(ep);
       if (model) {
-        showModel(model, cameraViewsUrl(ep));
+        showModel(model, cameraViewsUrl(ep), manifestUrl(ep));
       } else {
         showModelPending('Interactive 3D pending', 'No animated GLB is registered for this episode yet.');
       }
@@ -1288,9 +1284,9 @@
       video.addEventListener('canplay', tryPlay, {once: true});
     }
 
-    function showModel(src, cameraViewsSrc) {
+    function showModel(src, cameraViewsSrc, manifestSrc = '') {
       els['pending-layer'].classList.remove('visible');
-      showInteractive3D(src, cameraViewsSrc);
+      showInteractive3D(src, cameraViewsSrc, manifestSrc);
     }
 
     function showVideoPending(title, copy) {
@@ -1353,8 +1349,7 @@
       const f = filters();
       const episodes = state.episodes.filter(ep =>
         f.hands.has(ep.hand) &&
-        f.statuses.has(ep.status) &&
-        f.scenes.has(ep.scene)
+        f.statuses.has(ep.status)
       );
       const byObject = new Map();
       episodes.forEach(ep => {
@@ -1399,8 +1394,7 @@
       return state.episodes.find(ep =>
         ep.objId === objId &&
         f.hands.has(ep.hand) &&
-        f.statuses.has(ep.status) &&
-        f.scenes.has(ep.scene)
+        f.statuses.has(ep.status)
       );
     }
 
@@ -1415,8 +1409,7 @@
       const poseItems = state.episodes.filter(item =>
           item.objId === ep.objId &&
           f.hands.has(item.hand) &&
-          f.statuses.has(item.status) &&
-          f.scenes.has(item.scene)
+          f.statuses.has(item.status)
       ).slice(0, 48);
       els['pose-count'].textContent = `${poseItems.length} pose candidates`;
       els['pose-strip'].innerHTML = poseItems.map(item => {
@@ -1425,7 +1418,7 @@
           <video src="${turntableUrl(item)}" muted loop playsinline preload="metadata"></video>
           <div class="tile-body">
             <div class="tile-title">${escapeHtml(item.rankLabel)}</div>
-            <div class="tile-sub">${escapeHtml(titleize(item.hand))} | ${escapeHtml(titleize(item.scene))}</div>
+            <div class="tile-sub">${escapeHtml(titleize(item.hand))}</div>
             <div class="status-line">
               <span class="chip ${item.status === 'success' ? 'ok' : 'warn'}">${escapeHtml(item.status)}</span>
               <span class="chip">${item.cameras.length} views</span>
@@ -1452,7 +1445,7 @@
 
     function videoUrl(ep, camera) {
       if (!ep || !camera) return '';
-      return `${PROXY_HF_BASE}/experiments/${ep.hand}/${ep.objId}/${ep.rankStr}/${camera}.mp4`;
+      return `${PROXY_HF_BASE}/experiments_proxy/${ep.hand}/${ep.objId}/${ep.rankStr}/${camera}.mp4`;
     }
 
     function originalVideoUrl(ep, camera) {
@@ -1492,6 +1485,14 @@
       return candidate ? resolveAssetUrl(candidate) : '';
     }
 
+    function manifestUrl(ep) {
+      const objects = state.assets.objects || {};
+      const entry = objects[ep.objId] || {};
+      const episodeAsset = episode3DAsset(ep);
+      const candidate = episodeAsset?.manifest_json || entry.manifest_json || '';
+      return candidate ? resolveAssetUrl(candidate) : '';
+    }
+
     function resolveAssetUrl(url) {
       if (!url) return '';
       if (/^https?:\/\//.test(url)) return url;
@@ -1499,7 +1500,7 @@
       return `${base}${url}`;
     }
 
-    async function showInteractive3D(src, cameraViewsSrc = '') {
+    async function showInteractive3D(src, cameraViewsSrc = '', manifestSrc = '') {
       const token = ++viewer3d.loadToken;
       els['interactive-3d-viewer'].style.display = 'block';
       setInteractive3DStatus('Loading interactive 3D...');
@@ -1508,9 +1509,11 @@
         if (token !== viewer3d.loadToken) return;
         await Promise.all([
           loadInteractive3DModel(src, token),
-          loadInteractive3DCameraViews(cameraViewsSrc, token)
+          loadInteractive3DCameraViews(cameraViewsSrc, token),
+          loadInteractive3DManifest(manifestSrc, token)
         ]);
         if (token !== viewer3d.loadToken) return;
+        updateGraspButton();
         applySelectedCameraView();
       } catch (error) {
         if (token !== viewer3d.loadToken) return;
@@ -1580,6 +1583,9 @@
         els['interactive-3d-scrub'].addEventListener('input', () => {
           const t = (Number(els['interactive-3d-scrub'].value) || 0) / 1000;
           seekSynchronizedPlayback(t);
+        });
+        els['interactive-3d-grasp'].addEventListener('click', () => {
+          goToGraspFrame();
         });
         els['interactive-3d-speed'].addEventListener('change', () => {
           const video = els['main-video'];
@@ -1698,6 +1704,66 @@
       viewer3d.currentCameraViewsSrc = src;
     }
 
+    function graspFractionFromManifest(manifest) {
+      if (!manifest || typeof manifest !== 'object') return null;
+      const frameCount = Number(manifest.frame_count);
+      if (!Number.isFinite(frameCount) || frameCount <= 1) return null;
+      // grasp_frame_synced is the dataset-defined grasp frame, indexed to the
+      // same synced sequence as the GLB animation. The raw grasp_frame indexes
+      // unsynced sensor logs and must NOT be used here.
+      const graspIndex = Number(manifest.grasp?.grasp_frame_synced);
+      if (!Number.isFinite(graspIndex) || graspIndex < 0 || graspIndex > frameCount) return null;
+      return Math.max(0, Math.min(1, graspIndex / (frameCount - 1)));
+    }
+
+    async function loadInteractive3DManifest(src, token) {
+      viewer3d.graspFraction = null;
+      viewer3d.currentManifestSrc = src || '';
+      if (!src) return;
+      if (viewer3d.manifestCache.has(src)) {
+        viewer3d.graspFraction = viewer3d.manifestCache.get(src);
+        return;
+      }
+      let payload = null;
+      try {
+        payload = await fetch(src).then(r => {
+          if (!r.ok) throw new Error(`manifest fetch failed: ${r.status}`);
+          return r.json();
+        });
+      } catch (error) {
+        console.warn('grasp manifest unavailable:', error);
+      }
+      if (token !== viewer3d.loadToken) return;
+      const fraction = graspFractionFromManifest(payload);
+      viewer3d.manifestCache.set(src, fraction);
+      viewer3d.graspFraction = fraction;
+    }
+
+    function graspFrameTime() {
+      if (viewer3d.graspFraction == null || !viewer3d.duration) return null;
+      return Math.max(0, Math.min(viewer3d.duration, viewer3d.graspFraction * viewer3d.duration));
+    }
+
+    function updateGraspButton() {
+      const btn = els['interactive-3d-grasp'];
+      if (!btn) return;
+      const t = graspFrameTime();
+      btn.disabled = t == null;
+      btn.title = t == null ? 'Grasp frame unavailable for this episode' : `Jump to the grasp frame (${t.toFixed(2)}s)`;
+    }
+
+    function goToGraspFrame() {
+      const t = graspFrameTime();
+      if (t == null) return;
+      const video = els['main-video'];
+      if (hasVideoSource(video)) video.pause();
+      viewer3d.playing = false;
+      viewer3d.clock?.getDelta?.();
+      seekSynchronizedPlayback(t);
+      updateInteractivePlayButton();
+      setInteractive3DStatus(`Grasp frame @ ${t.toFixed(2)}s`);
+    }
+
     function clearInteractive3DModel() {
       viewer3d.mixer?.stopAllAction?.();
       if (viewer3d.assetRoot) {
@@ -1715,6 +1781,7 @@
       viewer3d.currentSrc = '';
       els['interactive-3d-scrub'].value = '0';
       els['interactive-3d-readout'].textContent = '0.00s';
+      updateGraspButton();
     }
 
     function disposeObject3D(root) {
