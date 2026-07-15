@@ -220,9 +220,32 @@
       line-height: 1.5;
     }
 
+    .doc-kicker {
+      color: var(--text-muted);
+      font-size: .74em;
+      font-weight: 850;
+      letter-spacing: .09em;
+      text-transform: uppercase;
+      margin-bottom: 6px;
+    }
+
     @media (max-width: 760px) {
       .hero-copy {
         padding: 38px 18px;
+        width: 100%;
+        box-sizing: border-box;
+      }
+
+      .hero-copy h1 {
+        font-size: clamp(2.6rem, 13vw, 4.2rem);
+      }
+
+      .hero-copy p,
+      .hero-copy h1,
+      .hero-kicker {
+        max-width: 100%;
+        overflow-wrap: break-word;
+        word-break: keep-all;
       }
 
       .landing-section {
@@ -252,17 +275,17 @@
       <div class="hero-copy">
         <div class="hero-kicker">Dexterous manipulation dataset</div>
         <h1>AutoDex</h1>
-        <p>Multi-view robot grasp executions over everyday objects, organized by object, pose, view, scene, and success label for paper-scale browsing and analysis.</p>
+        <p>Multi-view real-robot grasp executions over everyday objects &mdash; browse by object, pose, and camera view, with interactive 3D of every executed grasp.</p>
         <div class="hero-actions">
           <a class="hero-btn primary" href="gallery.html">Open Gallery</a>
-          <a class="hero-btn" href="experiments.html">Browse Experiments</a>
+          <a class="hero-btn" href="#dataset">Explore the dataset</a>
         </div>
       </div>
     </section>
 
     <section class="landing-section">
-      <h2>Dataset Scope</h2>
-      <p>AutoDex pairs grasp candidates with synchronized real-world execution videos. The gallery page is the main interactive panel for selecting an episode, switching views, and loading future 3D reconstructions.</p>
+      <h2>Explore</h2>
+      <p>The gallery pairs each grasp candidate with its synchronized real-world execution &mdash; pick an episode, switch camera views, and load the interactive 3D of the executed grasp.</p>
 
       <div class="landing-metrics">
         <div class="metric-card">
@@ -270,7 +293,7 @@
           <div class="metric-value" id="obj-count">-</div>
         </div>
         <div class="metric-card">
-          <div class="metric-label">Episodes</div>
+          <div class="metric-label">Grasps</div>
           <div class="metric-value" id="exp-count">-</div>
         </div>
         <div class="metric-card">
@@ -290,7 +313,7 @@
         </div>
         <div class="flow-item">
           <h3>Robot Execution</h3>
-          <p>Each episode records a hand, grasp candidate, scene, result, and camera set.</p>
+          <p>Each episode records a hand, grasp candidate, result, and 24-camera synchronized capture.</p>
         </div>
         <div class="flow-item">
           <h3>Interactive 3D</h3>
@@ -299,9 +322,10 @@
       </div>
     </section>
 
-    <section class="landing-section" id="dataset">
+    <section class="landing-section" id="dataset" style="border-top:1px solid var(--line);">
+      <div class="doc-kicker">For researchers &middot; HuggingFace</div>
       <h2>Dataset</h2>
-      <p>Real-robot dexterous grasp executions with multi-view video, calibrated cameras, 6-DOF object poses, and the executed grasp for each trial. Three subsets, one episode tree each.</p>
+      <p>Real-robot dexterous grasp executions with multi-view video, calibrated cameras, 6-DOF object poses, and the executed grasp for each trial &mdash; 2,614 trials across Allegro and Inspire hands, one episode tree per subset.</p>
 
       <div class="dataset-table-wrap">
         <table class="dataset-table">
@@ -309,8 +333,7 @@
             <tr><th>Dataset</th><th>Hand</th><th>Object-pose source</th><th>Trials (main)</th></tr>
           </thead>
           <tbody>
-            <tr><td><code>selected_100</code></td><td>xArm6 + Allegro (16-DOF)</td><td>SAM3 + FoundationPose (per-frame silhouette-refined)</td><td><span class="num">1,656</span></td></tr>
-            <tr><td><code>corl_selected_100</code></td><td>xArm6 + Allegro (16-DOF)</td><td>MV-GoTrack multi-view tracking</td><td><span class="num">574</span></td></tr>
+            <tr><td><code>selected_100</code> + <code>corl_selected_100</code></td><td>xArm6 + Allegro (16-DOF)</td><td>SAM3 + FoundationPose &middot; MV-GoTrack</td><td><span class="num">2,230</span></td></tr>
             <tr><td><code>selected_100_inspire</code></td><td>xArm6 + Inspire (6-DOF)</td><td>MV-GoTrack multi-view tracking</td><td><span class="num">384</span></td></tr>
           </tbody>
         </table>
@@ -347,13 +370,15 @@
       <div class="subhead">Download</div>
       <pre class="code-block">pip install huggingface_hub
 
-<span class="c"># Python</span>
+<span class="c"># Python — dataset subsets only (skips the web-gallery assets)</span>
 <span class="k">from</span> huggingface_hub <span class="k">import</span> snapshot_download
-snapshot_download(<span class="k">"willi19/autodex-gallery"</span>, repo_type=<span class="k">"dataset"</span>, local_dir=<span class="k">"autodex"</span>)
+snapshot_download(<span class="k">"willi19/autodex-gallery"</span>, repo_type=<span class="k">"dataset"</span>, local_dir=<span class="k">"autodex"</span>,
+                  allow_patterns=[<span class="k">"selected_100/*"</span>, <span class="k">"corl_selected_100/*"</span>, <span class="k">"selected_100_inspire/*"</span>])
 
-<span class="c"># CLI — whole dataset, or a single subset / object</span>
-hf download willi19/autodex-gallery --repo-type dataset --local-dir autodex
-hf download willi19/autodex-gallery --repo-type dataset --include <span class="k">"interactive_3d/inspire/apple/*"</span></pre>
+<span class="c"># CLI — all subsets, or just one subset / object</span>
+hf download willi19/autodex-gallery --repo-type dataset --local-dir autodex \
+  --include <span class="k">"selected_100/*"</span> <span class="k">"corl_selected_100/*"</span> <span class="k">"selected_100_inspire/*"</span>
+hf download willi19/autodex-gallery --repo-type dataset --include <span class="k">"corl_selected_100/attached_container/*"</span></pre>
 
       <div class="subhead">Loading example</div>
       <pre class="code-block"><span class="k">import</span> numpy <span class="k">as</span> np, json
