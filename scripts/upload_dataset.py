@@ -14,6 +14,12 @@ Must NOT run concurrently with any other upload to the same repo.
     python scripts/upload_dataset.py
 """
 import os
+
+# Speed/robustness tuning — must be set before importing huggingface_hub.
+os.environ.setdefault("HF_HUB_ENABLE_HF_TRANSFER", "1")  # accelerated LFS path
+os.environ.setdefault("HF_XET_HIGH_PERFORMANCE", "1")    # xet high-throughput uploads
+os.environ.setdefault("HF_HUB_DOWNLOAD_TIMEOUT", "60")   # fewer spurious ReadTimeouts
+
 import time
 
 from huggingface_hub import HfApi
@@ -27,7 +33,9 @@ SUBSETS = {
     "corl_selected_100": "allegro",
     "selected_100_inspire": "inspire",
 }
-IGNORE = ["raw/**", "init_capture/**", "raw/*", "init_capture/*"]
+# object_overlay is debug-only -> deferred to a separate later pass (upload_overlay.py)
+IGNORE = ["raw/**", "init_capture/**", "raw/*", "init_capture/*",
+          "object_overlay/**", "object_overlay/*"]
 LEDGER = "/home/mingi/shared_data/_dataset_upload_done.txt"
 MAX_RETRIES = 4
 

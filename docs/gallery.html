@@ -1107,7 +1107,7 @@
       const objects = new Set(state.episodes.map(ep => ep.objId)).size;
       const cameraCounts = new Set(state.episodes.map(ep => ep.cameras.length));
       els['summary-pills'].innerHTML = [
-        `<span class="chip accent">${state.episodes.length.toLocaleString()} episodes</span>`,
+        `<span class="chip accent">${state.episodes.length.toLocaleString()} grasps</span>`,
         `<span class="chip">${objects} objects</span>`,
         `<span class="chip ok">${successes} success</span>`,
         `<span class="chip warn">${fails} fail</span>`,
