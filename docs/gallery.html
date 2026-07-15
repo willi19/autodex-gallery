@@ -216,6 +216,40 @@
       backdrop-filter: blur(8px);
     }
 
+    .overlay-toggle-btn {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      z-index: 5;
+      padding: 5px 10px;
+      border: 1px solid rgba(255, 255, 255, .18);
+      border-radius: 6px;
+      background: rgba(12, 12, 12, .58);
+      color: rgba(255, 255, 255, .86);
+      font-size: .72em;
+      font-weight: 850;
+      letter-spacing: .04em;
+      text-transform: uppercase;
+      cursor: pointer;
+      backdrop-filter: blur(8px);
+    }
+
+    .overlay-toggle-btn:hover:not(:disabled) {
+      border-color: var(--accent);
+      color: #fff;
+    }
+
+    .overlay-toggle-btn.on {
+      border-color: rgba(226, 96, 59, .7);
+      background: rgba(226, 96, 59, .45);
+      color: #fff;
+    }
+
+    .overlay-toggle-btn:disabled {
+      opacity: .4;
+      cursor: not-allowed;
+    }
+
     .screen-wrap video,
     .interactive-3d-viewer,
     .screen-placeholder {
@@ -724,6 +758,7 @@
         <div class="screen-wrap">
           <section class="media-panel video-panel" aria-label="Selected camera video">
             <div class="media-panel-label">Video</div>
+            <button class="overlay-toggle-btn" id="overlay-toggle" type="button" disabled>Overlay: off</button>
             <video id="main-video" controls autoplay muted loop playsinline preload="metadata"></video>
             <div class="screen-placeholder" id="video-pending-layer">
               <div class="placeholder-box">
@@ -774,19 +809,19 @@
   </main>
 
   <script>
-    const ORIGINAL_HF_BASE = 'https://huggingface.co/datasets/willi19/autodex-gallery/resolve/main';
-    const PROXY_HF_BASE = 'https://huggingface.co/datasets/willi19/autodex-gallery/resolve/main';
+    const VIDEO_BASE = 'https://huggingface.co/datasets/willi19/autodex-gallery-video/resolve/main';
+    const GLB_BASE = 'https://huggingface.co/datasets/willi19/autodex-gallery/resolve/main';
     const THREE_MODULE_URL = 'https://unpkg.com/three@0.160.0/build/three.module.js';
     const ORBIT_CONTROLS_URL = 'https://unpkg.com/three@0.160.0/examples/jsm/controls/OrbitControls.js';
     const GLTF_LOADER_URL = 'https://unpkg.com/three@0.160.0/examples/jsm/loaders/GLTFLoader.js';
     const state = {
       catalog: [],
-      experiments: {},
-      assets: {objects: {}},
+      dataset: {},
       episodes: [],
       currentKey: null,
       currentCamera: null,
       mediaRequested: false,
+      showOverlay: false,
       openSelector: null,
       autoScrollRail: null,
       autoScrollFrame: null,
@@ -837,6 +872,7 @@
       'view-value',
       'selected-title',
       'selected-subtitle',
+      'overlay-toggle',
       'main-video',
       'video-pending-layer',
       'video-pending-title',
@@ -862,12 +898,10 @@
 
     Promise.all([
       fetch('catalog.json').then(r => r.json()),
-      fetch('experiments.json').then(r => r.json()),
-      fetch('assets3d.json?v=camera-views-v2').then(r => r.json()).catch(() => ({objects: {}}))
-    ]).then(([catalog, experiments, assets]) => {
+      fetch('dataset_episodes.json').then(r => r.json())
+    ]).then(([catalog, dataset]) => {
       state.catalog = catalog || [];
-      state.experiments = experiments || {};
-      state.assets = assets || {objects: {}};
+      state.dataset = dataset || {};
       state.episodes = flattenEpisodes();
       fillFilters();
       renderSummary();
@@ -883,6 +917,13 @@
     function bindEvents() {
       ['hand-filter', 'status-filter'].forEach(id => {
         els[id].addEventListener('change', syncAfterFilterChange);
+      });
+
+      els['overlay-toggle'].addEventListener('click', () => {
+        const ep = currentEpisode();
+        if (!ep || !ep.hasOverlay) return;
+        state.showOverlay = !state.showOverlay;
+        renderMainPanel();
       });
 
       ['object', 'pose', 'view'].forEach(name => {
@@ -1019,15 +1060,15 @@
       if (['object', 'pose', 'view'].includes(open)) {
         state.openSelector = open;
       }
-      const requestedObject = params.get('object');
+      const requestedObject = params.get('object') || params.get('obj');
       const requestedHand = params.get('hand') || params.get('embodiment');
-      const requestedRank = params.get('rank') || params.get('pose') || params.get('episode');
-      const requestedCamera = params.get('camera') || params.get('view');
-      if (requestedObject || requestedHand || requestedRank) {
+      const requestedTs = params.get('ts') || params.get('pose') || params.get('episode');
+      const requestedCamera = params.get('camera') || params.get('cam') || params.get('view');
+      if (requestedObject || requestedHand || requestedTs) {
         const target = state.episodes.find(ep =>
           (!requestedObject || ep.objId === requestedObject) &&
           (!requestedHand || ep.hand === requestedHand) &&
-          (!requestedRank || ep.rank === requestedRank || ep.rankStr === padRank(requestedRank))
+          (!requestedTs || ep.ts === requestedTs)
         );
         if (target) {
           state.currentKey = target.key;
@@ -1042,30 +1083,23 @@
     function flattenEpisodes() {
       const byId = new Map(state.catalog.map(obj => [obj.id, obj]));
       const episodes = [];
-      Object.entries(state.experiments).forEach(([hand, objects]) => {
-        Object.entries(objects || {}).forEach(([objId, grasps]) => {
+      Object.entries(state.dataset).forEach(([hand, objects]) => {
+        Object.entries(objects || {}).forEach(([objId, eps]) => {
           const obj = byId.get(objId) || {id: objId, name: titleize(objId), hands: {}, has_thumbnail: false};
-          Object.entries(grasps || {}).forEach(([rank, exp]) => {
-            const sceneInfo = Array.isArray(exp.scene_info) ? exp.scene_info : [];
-            const cameras = Array.isArray(exp.cameras) ? exp.cameras : [];
+          (Array.isArray(eps) ? eps : []).forEach((ep, idx) => {
+            const cameras = Array.isArray(ep.cameras) ? ep.cameras : [];
             episodes.push({
-              key: [hand, objId, rank].join('|'),
+              key: [hand, objId, ep.ts].join('|'),
               hand,
               objId,
               objName: obj.name || titleize(objId),
               hasThumbnail: Boolean(obj.has_thumbnail),
-              rank,
-              rankLabel: `Grasp #${Number(rank) + 1}`,
-              rankStr: padRank(rank),
-              status: exp.status || 'unknown',
-              scene: sceneInfo[0] || 'unknown',
-              sceneInfo,
-              dirIdx: exp.dir_idx || '',
-              nTrials: exp.n_trials,
-              nSuccess: exp.n_success,
+              ts: ep.ts,
+              rankLabel: `Trial ${idx + 1}`,
+              status: ep.status || 'unknown',
               cameras,
-              merged: exp.merged !== false,
-              raw: exp
+              hasGlb: Boolean(ep.has_glb),
+              hasOverlay: Boolean(ep.has_overlay)
             });
           });
         });
@@ -1073,7 +1107,7 @@
       return episodes.sort((a, b) =>
         a.objName.localeCompare(b.objName) ||
         a.hand.localeCompare(b.hand) ||
-        Number(a.rank) - Number(b.rank)
+        String(a.ts).localeCompare(String(b.ts))
       );
     }
 
@@ -1107,7 +1141,7 @@
       const objects = new Set(state.episodes.map(ep => ep.objId)).size;
       const cameraCounts = new Set(state.episodes.map(ep => ep.cameras.length));
       els['summary-pills'].innerHTML = [
-        `<span class="chip accent">${state.episodes.length.toLocaleString()} grasps</span>`,
+        `<span class="chip accent">${state.episodes.length.toLocaleString()} trials</span>`,
         `<span class="chip">${objects} objects</span>`,
         `<span class="chip ok">${successes} success</span>`,
         `<span class="chip warn">${fails} fail</span>`,
@@ -1202,8 +1236,11 @@
       els['selected-title'].textContent = `${ep.objName} - ${titleize(ep.hand)} - ${ep.rankLabel}`;
       els['selected-subtitle'].textContent = `View ${state.currentCamera || 'none'} | ${ep.status}`;
 
+      updateOverlayToggle(ep);
+
       if (state.mediaRequested && state.currentCamera) {
-        showVideo(videoUrl(ep, state.currentCamera), originalVideoUrl(ep, state.currentCamera));
+        const useOverlay = state.showOverlay && ep.hasOverlay;
+        showVideo(useOverlay ? overlayUrl(ep, state.currentCamera) : videoUrl(ep, state.currentCamera));
       } else {
         showVideoPending('Video not loaded', 'Select an object, pose, or view to load the selected video.');
       }
@@ -1216,6 +1253,20 @@
       }
     }
 
+    function updateOverlayToggle(ep) {
+      const btn = els['overlay-toggle'];
+      if (!btn) return;
+      const enabled = Boolean(ep && ep.hasOverlay);
+      if (!enabled) state.showOverlay = false;
+      btn.disabled = !enabled;
+      const on = enabled && state.showOverlay;
+      btn.classList.toggle('on', on);
+      btn.textContent = `Overlay: ${on ? 'on' : 'off'}`;
+      btn.title = enabled
+        ? 'Toggle object-overlay (debug) video'
+        : 'Object-overlay video unavailable for this trial';
+    }
+
     function renderViewRow() {
       const ep = currentEpisode();
       const cameras = ep?.cameras || [];
@@ -1226,14 +1277,14 @@
       }
       els['view-strip'].innerHTML = cameras.map((cam, idx) =>
         `<button class="view-tile ${cam === state.currentCamera ? 'active' : ''}" data-camera="${escapeHtml(cam)}" title="${escapeHtml(cam)}">
-          <img class="view-thumb" src="${viewThumbnailUrl(ep, cam)}" alt="" loading="lazy" decoding="async">
+          <div class="tile-preview view-preview"><span>View ${idx + 1}</span></div>
           <div class="tile-body">
             <div class="tile-title">View ${idx + 1}</div>
             <div class="tile-sub">${escapeHtml(cam)}</div>
           </div>
         </button>`
       ).join('');
-      els['view-strip'].querySelectorAll('.view-tile').forEach((btn, idx) => {
+      els['view-strip'].querySelectorAll('.view-tile').forEach(btn => {
         bindTileActivation(btn, () => {
           state.currentCamera = btn.dataset.camera;
           state.mediaRequested = true;
@@ -1241,19 +1292,7 @@
           renderSelectorRows();
           applySelectedCameraView({resetTime: true});
         });
-        bindViewThumbnailFallback(btn, idx + 1);
       });
-    }
-
-    function bindViewThumbnailFallback(btn, viewNumber) {
-      const img = btn.querySelector('img.view-thumb');
-      if (!img) return;
-      img.addEventListener('error', () => {
-        const fallback = document.createElement('div');
-        fallback.className = 'tile-preview view-preview';
-        fallback.innerHTML = `<span>View ${viewNumber}</span>`;
-        img.replaceWith(fallback);
-      }, {once: true});
     }
 
     function showVideo(src, fallbackSrc = '') {
@@ -1415,7 +1454,7 @@
       els['pose-strip'].innerHTML = poseItems.map(item => {
         const active = item.key === state.currentKey;
         return `<button class="pose-tile ${active ? 'active' : ''}" data-key="${escapeHtml(item.key)}">
-          <video src="${turntableUrl(item)}" muted loop playsinline preload="metadata"></video>
+          <video src="${videoUrl(item, item.cameras[0])}" muted loop playsinline preload="none"></video>
           <div class="tile-body">
             <div class="tile-title">${escapeHtml(item.rankLabel)}</div>
             <div class="tile-sub">${escapeHtml(titleize(item.hand))}</div>
@@ -1445,59 +1484,30 @@
 
     function videoUrl(ep, camera) {
       if (!ep || !camera) return '';
-      return `${PROXY_HF_BASE}/experiments_proxy/${ep.hand}/${ep.objId}/${ep.rankStr}/${camera}.mp4`;
+      return `${VIDEO_BASE}/${ep.hand}/${ep.objId}/${ep.ts}/${camera}.mp4`;
     }
 
-    function originalVideoUrl(ep, camera) {
+    function overlayUrl(ep, camera) {
       if (!ep || !camera) return '';
-      return `${ORIGINAL_HF_BASE}/experiments/${ep.hand}/${ep.objId}/${ep.rankStr}/${camera}.mp4`;
-    }
-
-    function viewThumbnailUrl(ep, camera) {
-      return `${PROXY_HF_BASE}/view_thumbnails/${ep.hand}/${ep.objId}/${ep.rankStr}/${camera}.webp`;
-    }
-
-    function turntableUrl(ep) {
-      return `${ORIGINAL_HF_BASE}/turntable/${ep.hand}/${ep.objId}/${ep.rankStr}/turntable.mp4`;
-    }
-
-    function episode3DAsset(ep) {
-      const objects = state.assets.objects || {};
-      const entry = objects[ep.objId] || {};
-      const recon = entry.reconstructions || entry.episodes || {};
-      return recon[ep.key] || recon[ep.rankStr] || recon[ep.rank] || null;
+      return `${VIDEO_BASE}/${ep.hand}/${ep.objId}/${ep.ts}/overlay_${camera}.mp4`;
     }
 
     function modelUrl(ep) {
-      const objects = state.assets.objects || {};
-      const entry = objects[ep.objId] || {};
-      const episodeAsset = episode3DAsset(ep);
-      const candidate = episodeAsset?.url || episodeAsset?.animated_glb || episodeAsset?.glb || episodeAsset?.gltf ||
-        entry.url || entry.animated_glb || entry.glb || entry.gltf || '';
-      return candidate ? resolveAssetUrl(candidate) : '';
+      return ep && ep.hasGlb
+        ? `${GLB_BASE}/interactive_3d/${ep.hand}/${ep.objId}/${ep.ts}/animated.glb`
+        : '';
     }
 
     function cameraViewsUrl(ep) {
-      const objects = state.assets.objects || {};
-      const entry = objects[ep.objId] || {};
-      const episodeAsset = episode3DAsset(ep);
-      const candidate = episodeAsset?.camera_views_json || entry.camera_views_json || '';
-      return candidate ? resolveAssetUrl(candidate) : '';
+      return ep && ep.hasGlb
+        ? `${GLB_BASE}/interactive_3d/${ep.hand}/${ep.objId}/${ep.ts}/camera_views.json`
+        : '';
     }
 
     function manifestUrl(ep) {
-      const objects = state.assets.objects || {};
-      const entry = objects[ep.objId] || {};
-      const episodeAsset = episode3DAsset(ep);
-      const candidate = episodeAsset?.manifest_json || entry.manifest_json || '';
-      return candidate ? resolveAssetUrl(candidate) : '';
-    }
-
-    function resolveAssetUrl(url) {
-      if (!url) return '';
-      if (/^https?:\/\//.test(url)) return url;
-      const base = state.assets.base_url || '';
-      return `${base}${url}`;
+      return ep && ep.hasGlb
+        ? `${GLB_BASE}/interactive_3d/${ep.hand}/${ep.objId}/${ep.ts}/manifest.json`
+        : '';
     }
 
     async function showInteractive3D(src, cameraViewsSrc = '', manifestSrc = '') {
@@ -1996,10 +2006,6 @@
       }
       viewer3d.controls?.update();
       viewer3d.renderer?.render(viewer3d.scene, viewer3d.camera);
-    }
-
-    function padRank(rank) {
-      return String(rank).padStart(3, '0');
     }
 
     function titleize(value) {
